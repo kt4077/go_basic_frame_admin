@@ -4,6 +4,8 @@
 
 > 本项目与 `server_api` 管理端服务配套使用，当前仍在持续完善中。
 
+仓库地址：[https://gitee.com/open-source-project-open/go_basic_frame_admin](https://gitee.com/open-source-project-open/go_basic_frame_admin)
+
 ## 特性
 
 - Vue 3 Composition API + TypeScript。
@@ -65,8 +67,8 @@ admin_client/
 ### 1. 安装依赖
 
 ```bash
-git clone <your-repository-url>
-cd go_backend_frame/admin_client
+git clone https://gitee.com/open-source-project-open/go_basic_frame_admin.git
+cd go_basic_frame_admin
 pnpm install
 ```
 
@@ -213,6 +215,14 @@ server {
 4. Pull Request 中附上功能说明、关联接口和必要的页面截图。
 
 安全漏洞请通过维护者提供的私密渠道报告，不要直接公开披露。
+
+## 微信交流
+
+如需交流项目使用、功能建议或参与贡献，可以扫描下方二维码：
+
+<p align="center">
+  <img src="./images/wechat.png" width="280" height="350" alt="微信交流二维码" />
+</p>
 
 ## License
 
