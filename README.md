@@ -220,7 +220,7 @@ server {
 
 如需交流项目使用、功能建议或参与贡献，可以扫描下方二维码：
 
-<p align="center">
+<p align="left">
   <img src="./images/wechat.png" width="280" height="350" alt="微信交流二维码" />
 </p>
 
