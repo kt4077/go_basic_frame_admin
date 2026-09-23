@@ -1,0 +1,244 @@
+/* =========================================================
+   全局设计系统：CSS 变量驱动的明暗双主题
+   顶栏 / 侧栏 / 子菜单列使用同一套表面色，保证视觉一致
+   ========================================================= */
+:root {
+  /* Element Plus 主色：更现代的蓝 */
+  --el-color-primary: #3b6ef6;
+  --el-color-primary-light-3: #6c93f8;
+  --el-color-primary-light-5: #9db7fa;
+  --el-color-primary-light-7: #cddcff;
+  --el-color-primary-light-8: #e0eaff;
+  --el-color-primary-light-9: #eef3fe;
+  --el-color-primary-dark-2: #2f57c4;
+  --el-border-radius-base: 6px;
+
+  /* 表面色：顶栏与侧栏同源 */
+  --page-bg: #f5f7fa;
+  --card-bg: #ffffff;
+  --card-border: #ebedf0;
+  --topbar-bg: #ffffff;
+  --topbar-border: #ebedf0;
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #ebedf0;
+
+  /* 菜单 */
+  --sidebar-text: #4b5563;
+  --sidebar-hover-bg: #f3f4f6;
+  --sidebar-active-bg: var(--el-color-primary-light-9);
+  --sidebar-active-text: var(--el-color-primary);
+
+  /* 登录页 */
+  --login-bg: linear-gradient(135deg, #eef3fe 0%, #f6f7fb 55%, #eef2ff 100%);
+
+  /* ============================================
+     列表操作图标全局配置（后期统一调整改这里）
+     大小 / 间距 / 各类型颜色
+     ============================================ */
+  --op-icon-size: 22px;                            /* 图标大小 */
+  --op-icon-gap: 14px;                             /* 图标横向间距 */
+  --op-icon-color: var(--el-color-primary);        /* 常规操作：添加/分配权限/重置密码 */
+  --op-icon-edit-color: var(--el-color-warning);   /* 修改类操作 */
+  --op-icon-danger-color: var(--el-color-danger);  /* 删除类操作 */
+  --op-icon-warning-color: var(--el-color-warning);/* 警告类操作：踢下线 */
+}
+
+html.dark {
+  --el-color-primary-light-3: #4c7ef8;
+  --el-color-primary-light-5: #3b6ef6;
+  --el-color-primary-light-7: #24365e;
+  --el-color-primary-light-8: #1d2c4d;
+  --el-color-primary-light-9: #16233f;
+  --el-color-primary-dark-2: #6c93f8;
+
+  --page-bg: #0b1220;
+  --card-bg: #111827;
+  --card-border: #1f2937;
+  --topbar-bg: #0f172a;
+  --topbar-border: #1f2937;
+  --sidebar-bg: #0f172a;
+  --sidebar-border: #1f2937;
+
+  --sidebar-text: #94a3b8;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-active-bg: rgba(59, 110, 246, 0.18);
+  --sidebar-active-text: #7ba3f9;
+
+  --login-bg: linear-gradient(135deg, #101a30 0%, #0b1220 55%, #0e1830 100%);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 细滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(144, 147, 153, 0.35);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(144, 147, 153, 0.55);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------- 菜单（第一列 / 第二列共用） ---------- */
+.side-menu.el-menu,
+.side-menu .el-menu,
+.sub-menu-panel .el-menu {
+  --el-menu-bg-color: transparent;
+  --el-menu-text-color: var(--sidebar-text);
+  --el-menu-hover-bg-color: var(--sidebar-hover-bg);
+  --el-menu-active-color: var(--sidebar-active-text);
+  --el-menu-item-height: 42px;
+  --el-menu-sub-item-height: 40px;
+  border-right: none;
+}
+
+/* 第一列的一级入口更紧凑；不影响展开后的二级菜单和右侧子菜单面板。 */
+.side-menu.el-menu > .el-menu-item,
+.side-menu.el-menu > .el-sub-menu > .el-sub-menu__title {
+  height: 40px;
+  line-height: 40px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+.side-menu .el-menu-item,
+.side-menu .el-sub-menu__title,
+.sub-menu-panel .el-menu-item,
+.sub-menu-panel .el-sub-menu__title {
+  margin: 4px 10px;
+  border-radius: 8px;
+  transition: background-color 0.2s, color 0.2s;
+}
+.side-menu .el-menu-item.is-active,
+.sub-menu-panel .el-menu-item.is-active {
+  background: var(--sidebar-active-bg);
+  font-weight: 600;
+}
+.side-menu .el-menu-item.is-active .el-icon,
+.sub-menu-panel .el-menu-item.is-active .el-icon {
+  color: var(--sidebar-active-text);
+}
+
+/* ---------- 通用卡片 / 工具条 ---------- */
+.page-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  margin-bottom: 12px;
+}
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 15px;
+  border-radius: 2px;
+  background: var(--el-color-primary);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.toolbar h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.table-operations {
+  display: flex;
+  gap: var(--op-icon-gap);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ---------- 表格 ---------- */
+.el-table {
+  --el-table-header-bg-color: var(--page-bg);
+  --el-table-border-color: var(--card-border);
+  border-radius: 8px;
+}
+.el-table th.el-table__cell {
+  font-weight: 600;
+  color: var(--el-text-color-secondary);
+}
+
+/* ---------- 裸图标操作（无按钮外壳），大小与颜色取全局变量 ---------- */
+.op-icon {
+  font-size: var(--op-icon-size);
+  color: var(--op-icon-color);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 0.2s, color 0.2s;
+}
+.op-icon:hover {
+  background: var(--el-color-primary-light-9);
+}
+.op-icon.is-edit {
+  color: var(--op-icon-edit-color);
+}
+.op-icon.is-edit:hover {
+  background: var(--el-color-warning-light-9);
+}
+.op-icon.is-danger {
+  color: var(--op-icon-danger-color);
+}
+.op-icon.is-danger:hover {
+  background: var(--el-color-danger-light-9);
+}
+.op-icon.is-warning {
+  color: var(--op-icon-warning-color);
+}
+.op-icon.is-warning:hover {
+  background: var(--el-color-warning-light-9);
+}
+
+/* ---------- 弹窗 / 输入 ---------- */
+.el-dialog {
+  border-radius: 12px;
+}
+.el-button {
+  font-weight: 500;
+}
+
+/* ---------- 页面切换过渡：仅进入时轻柔渐显，离开立即移除，避免白屏闪烁 ---------- */
+.page-enter-active {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}

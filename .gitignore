@@ -1,0 +1,52 @@
+# 依赖
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 构建产物
+dist/
+dist-ssr/
+build/
+.output/
+.serverless/
+*.local
+
+# 构建缓存
+.vite/
+.cache/
+.rpt2_cache/
+.eslintcache
+.tsbuildinfo
+*.tsbuildinfo
+
+# 环境变量
+.env
+.env.*
+!.env.example
+
+# 测试与覆盖率
+coverage/
+*.lcov
+.nyc_output/
+
+# 编辑器 / IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 证书与密钥
+*.pem
+*.key
+*.crt
