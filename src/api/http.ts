@@ -6,6 +6,7 @@ import { getToken, clearToken } from '@/utils/auth'
 import router from '@/router'
 
 const http = axios.create({
+  baseURL: import.meta.env.VITE_ADMIN_API_BASE_URL,
   timeout: 15000,
 })
 

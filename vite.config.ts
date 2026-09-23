@@ -12,17 +12,5 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    proxy: {
-      // 管理端接口代理到 Go 后端
-      '/admin': {
-        target: 'http://127.0.0.1:8001',
-        changeOrigin: true,
-      },
-      // 用户端接口代理
-      '/api': {
-        target: 'http://127.0.0.1:8002',
-        changeOrigin: true,
-      },
-    },
   },
 })
