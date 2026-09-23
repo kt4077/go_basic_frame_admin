@@ -3,7 +3,7 @@ import { reactive, ref, watchEffect } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Lock, Message, Phone, User } from '@element-plus/icons-vue'
 import AvatarUpload from '@/components/AvatarUpload.vue'
-import { changePassword, updateProfile } from '@/api/auth'
+import { changePassword, updateAvatar, updateProfile } from '@/api/auth'
 import { useUserStore } from '@/store/user'
 import { useRouter } from 'vue-router'
 
@@ -33,6 +33,12 @@ const saveProfile = async () => {
   } finally {
     saving.value = false
   }
+}
+
+const saveAvatar = async (avatar: string) => {
+  const user = await updateAvatar({ avatar })
+  userStore.setUserInfo(user)
+  ElMessage.success('头像已更新')
 }
 
 const savePassword = async () => {
@@ -68,6 +74,7 @@ const savePassword = async () => {
             shape="circle"
             :show-tip="false"
             :show-remove="false"
+            :after-upload="saveAvatar"
             edit-badge
           />
         </div>

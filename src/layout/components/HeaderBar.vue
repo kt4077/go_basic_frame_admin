@@ -1,15 +1,20 @@
 <script setup lang="ts">
 // 顶栏：品牌区、主题切换、水印设置、用户菜单（与侧栏共用同一表面色）
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Moon, Sunny, Setting, ArrowDown, Fold, Expand, FullScreen } from '@element-plus/icons-vue'
+import { Moon, Sunny, Setting, ArrowDown, ArrowRight, Fold, Expand, FullScreen, Location } from '@element-plus/icons-vue'
 import { useAppStore } from '@/store/app'
 import { useUserStore } from '@/store/user'
+import { usePlatformStore } from '@/store/platform'
+import type { TreeNode } from '@/types/common'
+import type { MenuItem } from '@/types/menu'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
+const platformStore = usePlatformStore()
 const router = useRouter()
+const route = useRoute()
 
 const settingsVisible = ref(false)
 
@@ -18,7 +23,10 @@ const isFullscreen = ref(false)
 const onFullscreenChange = () => {
   isFullscreen.value = !!document.fullscreenElement
 }
-onMounted(() => document.addEventListener('fullscreenchange', onFullscreenChange))
+onMounted(() => {
+  document.addEventListener('fullscreenchange', onFullscreenChange)
+  platformStore.loadAdminConfig()
+})
 onBeforeUnmount(() => document.removeEventListener('fullscreenchange', onFullscreenChange))
 const toggleFullscreen = () => {
   if (document.fullscreenElement) {
@@ -32,6 +40,24 @@ const themeIcon = computed(() => (appStore.theme === 'light' ? Moon : Sunny))
 const avatarChar = computed(() =>
   (userStore.userInfo?.nickname || userStore.userInfo?.username || '?').slice(0, 1),
 )
+
+/** 从权限菜单树中解析当前页面的完整层级路径。 */
+const findMenuPath = (nodes: TreeNode<MenuItem>[], path: string, parents: string[] = []): string[] => {
+  for (const node of nodes) {
+    const current = [...parents, node.data.name]
+    if (node.data.path === path) return current
+    const matched = findMenuPath(node.children ?? [], path, current)
+    if (matched.length > 0) return matched
+  }
+  return []
+}
+
+const currentPagePath = computed(() => {
+  const menuPath = findMenuPath(userStore.routers, route.path)
+  if (menuPath.length > 0) return menuPath
+  const title = route.meta.title
+  return typeof title === 'string' && title ? [title] : [route.path]
+})
 
 const toggleTheme = () => {
   appStore.setTheme(appStore.theme === 'light' ? 'dark' : 'light')
@@ -54,16 +80,26 @@ const openProfile = () => router.push('/profile')
 <template>
   <header class="header-bar">
     <div class="brand">
-      <div class="brand-mark">
-        <el-icon :size="17"><Platform /></el-icon>
+      <div class="brand-mark" :class="{ 'has-logo': platformStore.adminConfig.logo }">
+        <img v-if="platformStore.adminConfig.logo" :src="platformStore.adminConfig.logo" alt="系统Logo" />
+        <el-icon v-else :size="17"><Platform /></el-icon>
       </div>
-      <span class="brand-name">后台管理系统</span>
+      <span class="brand-name">{{ platformStore.adminConfig.system_name }}</span>
       <el-tooltip :content="appStore.sidebarCollapsed ? '展开菜单' : '收起菜单'" placement="bottom">
         <button class="header-action collapse-toggle" @click="appStore.toggleSidebar()">
           <el-icon :size="17"><component :is="appStore.sidebarCollapsed ? Expand : Fold" /></el-icon>
         </button>
       </el-tooltip>
     </div>
+
+    <nav class="page-meta" aria-label="当前页面路径">
+      <span class="page-meta-icon"><el-icon :size="14"><Location /></el-icon></span>
+      <span class="page-meta-label">当前位置</span>
+      <span v-for="(item, index) in currentPagePath" :key="`${item}-${index}`" class="page-meta-node">
+        <el-icon v-if="index > 0" :size="11" class="page-meta-separator"><ArrowRight /></el-icon>
+        <span :class="{ current: index === currentPagePath.length - 1 }">{{ item }}</span>
+      </span>
+    </nav>
 
     <div class="spacer" />
 
@@ -150,6 +186,18 @@ const openProfile = () => router.push('/profile')
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(59, 110, 246, 0.35);
+  overflow: hidden;
+}
+.brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.brand-mark.has-logo {
+  background: transparent;
+  box-shadow: none;
 }
 .brand-name {
   font-size: 16px;
@@ -158,6 +206,57 @@ const openProfile = () => router.push('/profile')
 }
 .collapse-toggle {
   margin-left: 12px;
+}
+.page-meta {
+  min-width: 0;
+  max-width: min(42vw, 560px);
+  height: 32px;
+  margin-left: 6px;
+  padding: 0 11px 0 7px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  border: 1px solid var(--topbar-border);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--sidebar-hover-bg) 65%, transparent);
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.page-meta-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--el-color-primary) 12%, transparent);
+  color: var(--el-color-primary);
+}
+.page-meta-label {
+  color: var(--el-text-color-placeholder);
+  flex-shrink: 0;
+}
+.page-meta-node {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+.page-meta-node span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.page-meta-node span.current {
+  color: var(--el-text-color-primary);
+  font-weight: 600;
+}
+.page-meta-separator {
+  flex-shrink: 0;
+  color: var(--el-text-color-placeholder);
 }
 .spacer {
   flex: 1;
@@ -208,5 +307,26 @@ const openProfile = () => router.push('/profile')
 }
 .user-arrow {
   color: var(--el-text-color-secondary);
+}
+@media (max-width: 900px) {
+  .page-meta-label,
+  .page-meta-node:not(:last-child) {
+    display: none;
+  }
+  .page-meta {
+    max-width: 180px;
+  }
+}
+@media (max-width: 640px) {
+  .brand-name,
+  .page-meta {
+    display: none;
+  }
+  .collapse-toggle {
+    margin-left: 2px;
+  }
+  .user-name {
+    display: none;
+  }
 }
 </style>

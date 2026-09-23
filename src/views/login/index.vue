@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // 登录页
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock, Platform, Check, Moon, Sunny, Right } from '@element-plus/icons-vue'
@@ -8,11 +8,13 @@ import { login } from '@/api/auth'
 import { setToken } from '@/utils/auth'
 import { useUserStore } from '@/store/user'
 import { useAppStore } from '@/store/app'
+import { usePlatformStore } from '@/store/platform'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const appStore = useAppStore()
+const platformStore = usePlatformStore()
 const themeIcon = computed(() => (appStore.theme === 'light' ? Moon : Sunny))
 
 const form = reactive({ username: 'admin', password: '' })
@@ -39,6 +41,8 @@ const onSubmit = async () => {
 }
 
 const toggleTheme = () => appStore.setTheme(appStore.theme === 'light' ? 'dark' : 'light')
+
+onMounted(() => platformStore.loadAdminConfig())
 </script>
 
 <template>
@@ -52,8 +56,11 @@ const toggleTheme = () => appStore.setTheme(appStore.theme === 'light' ? 'dark' 
     <div class="login-shell">
       <section class="brand-panel">
         <div class="brand-row">
-          <div class="brand-badge"><el-icon :size="22"><Platform /></el-icon></div>
-          <span>GO ADMIN</span>
+          <div class="brand-badge" :class="{ 'has-logo': platformStore.adminConfig.logo }">
+            <img v-if="platformStore.adminConfig.logo" :src="platformStore.adminConfig.logo" alt="系统Logo" />
+            <el-icon v-else :size="22"><Platform /></el-icon>
+          </div>
+          <span>{{ platformStore.adminConfig.system_name }}</span>
         </div>
         <div class="brand-copy">
           <span class="eyebrow">企业级管理基础框架</span>
@@ -174,7 +181,10 @@ const toggleTheme = () => appStore.setTheme(appStore.theme === 'light' ? 'dark' 
   border-radius: 12px;
   background: rgba(255,255,255,.14);
   backdrop-filter: blur(8px);
+  overflow: hidden;
 }
+.brand-badge img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
+.brand-badge.has-logo { border-color: transparent; background: transparent; backdrop-filter: none; }
 .brand-copy { position: relative; margin-top: 76px; }
 .eyebrow { display: inline-block; margin-bottom: 18px; padding: 6px 11px; border-radius: 20px; background: rgba(255,255,255,.13); font-size: 12px; }
 .brand-copy h1 { margin: 0; font-size: 35px; line-height: 1.35; letter-spacing: 1px; }

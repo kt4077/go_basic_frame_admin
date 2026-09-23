@@ -44,3 +44,8 @@ export interface ProfileUpdateReq {
   mobile: string
   email: string
 }
+
+/** 当前管理员头像更新参数。 */
+export interface AvatarUpdateReq {
+  avatar: string
+}

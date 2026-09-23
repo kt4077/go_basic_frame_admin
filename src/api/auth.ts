@@ -1,6 +1,6 @@
 // 认证模块接口
 import { request } from './http'
-import type { LoginReq, LoginRes, UserInfo, ChangePasswordReq, ProfileUpdateReq } from '@/types/auth'
+import type { LoginReq, LoginRes, UserInfo, ChangePasswordReq, ProfileUpdateReq, AvatarUpdateReq } from '@/types/auth'
 import type { MenuItem } from '@/types/menu'
 import type { TreeNode } from '@/types/common'
 
@@ -32,4 +32,9 @@ export const changePassword = (data: ChangePasswordReq) => {
 
 export const updateProfile = (data: ProfileUpdateReq) => {
   return request<UserInfo>({ url: '/admin/profile/update', method: 'post', data })
+}
+
+/** 单独更新当前管理员头像。 */
+export const updateAvatar = (data: AvatarUpdateReq) => {
+  return request<UserInfo>({ url: '/admin/profile/avatar', method: 'post', data })
 }
