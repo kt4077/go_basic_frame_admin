@@ -4,7 +4,10 @@
 
 > 本项目与 `server_api` 管理端服务配套使用，当前仍在持续完善中。
 
-仓库地址：[https://gitee.com/open-source-project-open/go_basic_frame_admin](https://gitee.com/open-source-project-open/go_basic_frame_admin)
+配套仓库：
+
+- 管理端：[go_basic_frame_admin](https://gitee.com/open-source-project-open/go_basic_frame_admin)
+- 接口端：[go_basic_frame_api](https://gitee.com/open-source-project-open/go_basic_frame_api)
 
 ## 特性
 
