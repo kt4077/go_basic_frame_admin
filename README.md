@@ -4,6 +4,8 @@
 
 > 本项目与 `server_api` 管理端服务配套使用，当前仍在持续完善中。
 
+[English](README_EN.md)
+
 | 官网地址 | 管理端地址 | 接口端地址 | 接口文档 |
 | --- | --- | --- | --- |
 | [访问官网](https://www.tutudati.com/) | [管理端源码](https://gitee.com/open-source-project-open/go_basic_frame_admin) | [接口端源码](https://gitee.com/open-source-project-open/go_basic_frame_api) | [接口文档](https://s.apifox.cn/a42d392b-c5e9-4b75-8f54-e1c26339b262) |
