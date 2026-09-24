@@ -1,9 +1,9 @@
 <script setup lang="ts">
 // 操作日志：管理端全量接口调用记录（含请求/响应参数，点击查看详情）
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
-import { getOperationLogList } from '@/api/operation_log'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Delete, DeleteFilled, Search } from '@element-plus/icons-vue'
+import { clearOperationLogs, deleteOperationLogs, getOperationLogList } from '@/api/operation_log'
 import type { OperationLogItem } from '@/types/operation_log'
 import AppPagination from '@/components/AppPagination.vue'
 import { formatDateTimeCell, formatDateTimesDeep } from '@/utils/datetime'
@@ -11,6 +11,8 @@ import { formatDateTimeCell, formatDateTimesDeep } from '@/utils/datetime'
 const loading = ref(false)
 const total = ref(0)
 const list = ref<OperationLogItem[]>([])
+const selectedIDs = ref<number[]>([])
+const deleting = ref(false)
 const query = reactive({
   username: '',
   time_range: undefined as [string, string] | undefined,
@@ -30,8 +32,52 @@ const load = async () => {
     })
     list.value = res.list
     total.value = res.total
+    selectedIDs.value = []
   } finally {
     loading.value = false
+  }
+}
+
+const handleSelectionChange = (rows: OperationLogItem[]) => {
+  selectedIDs.value = rows.map((row) => row.id)
+}
+
+/** 批量物理删除当前勾选日志 */
+const deleteSelected = async () => {
+  if (selectedIDs.value.length === 0) return
+  await ElMessageBox.confirm(
+    `确定物理删除选中的 ${selectedIDs.value.length} 条操作日志吗？删除后无法恢复。`,
+    '批量删除确认',
+    { type: 'warning', confirmButtonText: '确认删除', cancelButtonText: '取消' },
+  )
+  deleting.value = true
+  try {
+    const result = await deleteOperationLogs(selectedIDs.value)
+    ElMessage.success(`已删除 ${result.deleted} 条操作日志`)
+    if (list.value.length <= selectedIDs.value.length && query.page > 1) query.page -= 1
+    await load()
+  } finally {
+    deleting.value = false
+  }
+}
+
+/** 输入指定文字后二次确认，全量物理清空操作日志 */
+const clearAll = async () => {
+  await ElMessageBox.prompt('此操作会物理删除全部操作日志且无法恢复，请输入“清空全部日志”确认。', '清空全部日志', {
+    type: 'warning',
+    confirmButtonText: '确认清空',
+    cancelButtonText: '取消',
+    inputPlaceholder: '清空全部日志',
+    inputValidator: (value) => value === '清空全部日志' || '请输入“清空全部日志”',
+  })
+  deleting.value = true
+  try {
+    const result = await clearOperationLogs()
+    ElMessage.success(`已清空 ${result.deleted} 条操作日志`)
+    query.page = 1
+    await load()
+  } finally {
+    deleting.value = false
   }
 }
 
@@ -111,9 +157,28 @@ onMounted(load)
         />
         <el-button type="primary" :icon="Search" @click="query.page = 1; load()">搜索</el-button>
       </div>
+      <div class="toolbar-right">
+        <el-button
+          v-perm="'POST:/admin/log/operation/delete'"
+          type="danger"
+          plain
+          :icon="Delete"
+          :disabled="selectedIDs.length === 0"
+          :loading="deleting"
+          @click="deleteSelected"
+        >批量删除<span v-if="selectedIDs.length">（{{ selectedIDs.length }}）</span></el-button>
+        <el-button
+          v-perm="'POST:/admin/log/operation/clear'"
+          type="danger"
+          :icon="DeleteFilled"
+          :loading="deleting"
+          @click="clearAll"
+        >清空全部</el-button>
+      </div>
     </div>
 
-    <el-table :data="list" v-loading="loading" stripe>
+    <el-table :data="list" v-loading="loading" stripe @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="48" />
       <el-table-column prop="created_at" label="操作时间" width="170" :formatter="formatDateTimeCell" />
       <el-table-column prop="username" label="操作人" width="110" />
       <el-table-column label="请求方式" width="90">
@@ -171,6 +236,11 @@ onMounted(load)
   display: flex;
   align-items: center;
   gap: 12px;
+}
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .ellipsis {
   display: inline-block;
