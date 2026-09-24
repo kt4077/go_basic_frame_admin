@@ -2,7 +2,7 @@
 // 插件管理：查看安装及迁移信息，维护下次服务启动时生效的启停状态。
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Edit, InfoFilled, Refresh, Search, View } from '@element-plus/icons-vue'
+import { Edit, InfoFilled, Refresh, Search, VideoPause, VideoPlay, View } from '@element-plus/icons-vue'
 import { getPluginDetail, getPluginList, updatePluginInfo, updatePluginStatus } from '@/api/plugin'
 import AppPagination from '@/components/AppPagination.vue'
 import AvatarUpload from '@/components/AvatarUpload.vue'
@@ -121,6 +121,12 @@ const changeStatus = async (row: PluginItem) => {
   await load()
 }
 
+const canChangeStatus = (row: PluginItem) => row.compiled || row.status === PluginStatus.Enabled
+const statusActionText = (row: PluginItem) => {
+  if (!canChangeStatus(row)) return '插件未编译，不能启用'
+  return row.status === PluginStatus.Enabled ? '停用插件' : '启用插件'
+}
+
 onMounted(load)
 </script>
 
@@ -213,15 +219,21 @@ onMounted(load)
                 @click="editInfo(row)"
               ><Edit /></el-icon>
             </el-tooltip>
-            <el-button
-              v-perm="'POST:/admin/plugin/status'"
-              link
-              :type="row.status === PluginStatus.Enabled ? 'danger' : 'primary'"
-              :disabled="!row.compiled && row.status !== PluginStatus.Enabled"
-              @click="changeStatus(row)"
-            >
-              {{ row.status === PluginStatus.Enabled ? '停用' : '启用' }}
-            </el-button>
+            <el-tooltip :content="statusActionText(row)" placement="top">
+              <el-icon
+                v-perm="'POST:/admin/plugin/status'"
+                class="op-icon"
+                :class="{
+                  'is-enable': row.status !== PluginStatus.Enabled,
+                  'is-danger': row.status === PluginStatus.Enabled,
+                  'is-disabled': !canChangeStatus(row),
+                }"
+                @click="canChangeStatus(row) && changeStatus(row)"
+              >
+                <VideoPause v-if="row.status === PluginStatus.Enabled" />
+                <VideoPlay v-else />
+              </el-icon>
+            </el-tooltip>
           </div>
         </template>
       </el-table-column>
@@ -349,6 +361,19 @@ onMounted(load)
 }
 .restart-alert {
   margin-bottom: 16px;
+}
+.op-icon.is-enable {
+  color: var(--el-color-success);
+}
+.op-icon.is-enable:hover {
+  background: var(--el-color-success-light-9);
+}
+.op-icon.is-disabled {
+  color: var(--el-text-color-placeholder);
+  cursor: not-allowed;
+}
+.op-icon.is-disabled:hover {
+  background: transparent;
 }
 .detail-content {
   min-height: 240px;
