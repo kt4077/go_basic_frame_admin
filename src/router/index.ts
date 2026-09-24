@@ -8,6 +8,7 @@ import Layout from '@/layout/index.vue'
 import { MenuType } from '@/enums/menu'
 import type { MenuItem } from '@/types/menu'
 import type { TreeNode } from '@/types/common'
+import { resolvePluginView } from '@/plugins/registry'
 
 // 页面组件按约定自动收集：菜单 /x/y → src/views/x/y/index.vue（或 x/y.vue）
 const viewModules = import.meta.glob('/src/views/**/*.vue')
@@ -18,6 +19,7 @@ const addedRouteNames = new Set<string>()
 
 const resolveView = (menuPath: string) => {
   return (
+    resolvePluginView(menuPath) ??
     viewModules[`/src/views${menuPath}/index.vue`] ??
     viewModules[`/src/views${menuPath}.vue`] ??
     notFound // 数据库里配了菜单但前端没有对应页面时，兜底到 404
