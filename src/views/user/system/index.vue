@@ -2,7 +2,7 @@
 // 系统用户：会员用户信息展示、账号启用/禁用
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, SwitchButton, CircleCheck } from '@element-plus/icons-vue'
+import { Search, SwitchButton, CircleCheck, Refresh } from '@element-plus/icons-vue'
 import { getMemberList, setMemberStatus } from '@/api/member'
 import { formatDateTimeCell } from '@/utils/datetime'
 import { Status, StatusLabels } from '@/enums/common'
@@ -37,6 +37,14 @@ const load = async () => {
   }
 }
 
+const reset = () => {
+  query.keyword = ''
+  query.status = undefined
+  query.register_source = undefined
+  query.page = 1
+  load()
+}
+
 const onToggleStatus = async (row: MemberItem) => {
   const disabling = row.status === Status.Enabled
   const name = row.nickname || row.real_name || row.mobile
@@ -63,6 +71,7 @@ onMounted(load)
           <el-option v-for="(label, value) in RegisterSourceLabels" :key="value" :label="label" :value="Number(value)" />
         </el-select>
         <el-button type="primary" :icon="Search" @click="query.page = 1; load()">搜索</el-button>
+        <el-button :icon="Refresh" @click="reset">重置</el-button>
       </div>
     </div>
 

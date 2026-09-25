@@ -2,7 +2,7 @@
 // 操作日志：管理端全量接口调用记录（含请求/响应参数，点击查看详情）
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, DeleteFilled, Search } from '@element-plus/icons-vue'
+import { Delete, DeleteFilled, Search, Refresh } from '@element-plus/icons-vue'
 import { clearOperationLogs, deleteOperationLogs, getOperationLogList } from '@/api/operation_log'
 import type { OperationLogItem } from '@/types/operation_log'
 import AppPagination from '@/components/AppPagination.vue'
@@ -36,6 +36,13 @@ const load = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const reset = () => {
+  query.username = ''
+  query.time_range = undefined
+  query.page = 1
+  load()
 }
 
 const handleSelectionChange = (rows: OperationLogItem[]) => {
@@ -156,6 +163,7 @@ onMounted(load)
           @change="query.page = 1; load()"
         />
         <el-button type="primary" :icon="Search" @click="query.page = 1; load()">搜索</el-button>
+        <el-button :icon="Refresh" @click="reset">重置</el-button>
       </div>
       <div class="toolbar-right">
         <el-button
