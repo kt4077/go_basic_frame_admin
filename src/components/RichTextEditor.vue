@@ -84,6 +84,13 @@ onBeforeUnmount(() => editorRef.value?.destroy())
   transition: border-color var(--el-transition-duration), background-color var(--el-transition-duration);
 }
 .rich-text-editor:focus-within { border-color: var(--el-color-primary); }
+/* wangeditor 全屏只在容器上加 position:fixed 不带 z-index，会被顶栏（z-index:5）
+   和 DOM 靠后的定位元素盖住；1000 高于布局层，低于 Element Plus 弹窗(2000+)与水印(9999)。 */
+.rich-text-editor.w-e-full-screen-container {
+  z-index: 1000;
+  border: none;
+  border-radius: 0;
+}
 .rich-text-toolbar { border-bottom: 1px solid var(--card-border); }
 .rich-text-content { overflow-y: auto; background: var(--card-bg); }
 .is-disabled { opacity: .72; }
