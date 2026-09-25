@@ -77,6 +77,9 @@ onMounted(load)
           </div>
         </template>
       </el-table-column>
+      <el-table-column label="编号" min-width="150">
+        <template #default="{ row }">{{ row.sn }}</template>
+      </el-table-column>
       <el-table-column prop="real_name" label="姓名" width="120" />
       <el-table-column prop="mobile" label="手机号" width="150" />
       <el-table-column label="性别" width="90">

@@ -3,6 +3,7 @@ import type { BaseEntity, PageQuery } from './common'
 
 /** 系统用户实体 */
 export interface MemberItem extends BaseEntity {
+  sn: string
   nickname: string
   real_name: string
   account: string
