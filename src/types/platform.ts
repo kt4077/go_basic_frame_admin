@@ -3,6 +3,7 @@ export interface AdminPlatformConfig {
   logo: string
   logo_path: string
   system_name: string
+  version: string
 }
 
 /** 管理端平台配置保存参数。 */

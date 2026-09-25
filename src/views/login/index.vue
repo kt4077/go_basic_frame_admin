@@ -94,11 +94,7 @@ onMounted(() => platformStore.loadAdminConfig())
             <span>登录系统</span><el-icon><Right /></el-icon>
           </el-button>
         </el-form>
-        <div class="account-tip">
-          <el-icon><Lock /></el-icon>
-          <span>演示账号：admin&nbsp;&nbsp; 密码：123456</span>
-        </div>
-        <p class="copyright">© 2026 Go Backend Frame</p>
+        <p class="copyright">© 2026 {{ platformStore.adminConfig.system_name }}<template v-if="platformStore.adminConfig.version"> · {{ platformStore.adminConfig.version }}</template></p>
       </section>
     </div>
   </div>
@@ -208,13 +204,13 @@ onMounted(() => platformStore.loadAdminConfig())
   height: 46px;
   display: flex;
   gap: 8px;
-  margin-top: 5px;
+  margin-top: 24px;
+  margin-bottom: 18px;
   border-radius: 10px;
   font-weight: 600;
   box-shadow: 0 8px 20px rgba(59, 110, 246, .25);
 }
-.account-tip { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 22px; padding: 10px; border-radius: 9px; color: var(--el-text-color-secondary); background: var(--el-fill-color-light); font-size: 12px; }
-.copyright { margin-top: auto; padding-top: 28px; text-align: center; color: var(--el-text-color-placeholder); font-size: 11px; }
+.copyright { margin-top: auto; padding-top: 40px; text-align: center; color: var(--el-text-color-placeholder); font-size: 11px; }
 @media (max-width: 760px) {
   .login-page { padding: 18px; align-items: flex-start; overflow-y: auto; }
   .login-shell { grid-template-columns: 1fr; min-height: auto; margin: auto 0; }
