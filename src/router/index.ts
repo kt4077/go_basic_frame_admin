@@ -11,7 +11,7 @@ import type { TreeNode } from '@/types/common'
 import { resolvePluginView } from '@/plugins/registry'
 
 // 页面组件按约定自动收集：菜单 /x/y → src/views/x/y/index.vue（或 x/y.vue）
-const viewModules = import.meta.glob('/src/views/**/*.vue')
+const viewModules = import.meta.glob(['/src/views/**/*.vue', '!/src/views/**/components/**/*.vue'])
 const notFound = () => import('@/views/error/404.vue')
 
 // 已动态注册的路由名（= 菜单 path），用于切换账号时重置
