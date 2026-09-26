@@ -4,7 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Edit, Delete, Plus, Search } from '@element-plus/icons-vue'
 import { deleteSMSConfig, deleteSMSSignature, deleteSMSTemplate, getSMSConfigs, getSMSLogs, getSMSSignatures, getSMSTemplates, saveSMSConfig, saveSMSSignature, saveSMSTemplate } from '@/api/sms'
 import type { SMSConfig, SMSSignature, SMSTemplate, SMSSendLog } from '@/types/sms'
-import { SMSProvider, SMSProviderLabels, SMSSendStatusLabels, SMSTemplateType, SMSTemplateTypeLabels } from '@/enums/channel'
+import { SMSDefault, SMSProvider, SMSProviderLabels, SMSSendStatusLabels, SMSTemplateType, SMSTemplateTypeLabels } from '@/enums/channel'
 import { Status, StatusLabels } from '@/enums/common'
 import { formatDateTimeCell } from '@/utils/datetime'
 import AppPagination from '@/components/AppPagination.vue'
@@ -53,7 +53,7 @@ const onTabChange = (name: string | number) => { if (String(name) === 'logs') lo
 const openCreate = (mode: EditMode) => {
   editMode.value = mode
   const defaults = mode === 'config'
-    ? { id: 0, name: '', provider: SMSProvider.Aliyun, access_key_id: '', access_key_secret: '', endpoint: '', status: Status.Enabled, remark: '' }
+    ? { id: 0, name: '', provider: SMSProvider.Aliyun, access_key_id: '', access_key_secret: '', endpoint: '', is_default: SMSDefault.No, status: Status.Enabled, remark: '' }
     : mode === 'signature'
       ? { id: 0, config_id: configs.value[0]?.id, name: '', sign_code: '', status: Status.Enabled, remark: '' }
       : { id: 0, config_id: configs.value[0]?.id, name: '', template_code: '', type: SMSTemplateType.VerifyCode, content: '', status: Status.Enabled, remark: '' }
@@ -72,6 +72,7 @@ const submit = async () => {
   if (editMode.value === 'config') {
     if (!form.access_key_id?.trim()) return ElMessage.warning(`请填写${currentCredential().idLabel}`)
     if (!form.id && currentCredential().secretRequired && !form.access_key_secret?.trim()) return ElMessage.warning(`请填写${currentCredential().secretLabel}`)
+    if (form.is_default === SMSDefault.Yes && form.status !== Status.Enabled) return ElMessage.warning('默认短信渠道必须为启用状态')
   }
   if (editMode.value === 'signature' && !form.sign_code?.trim()) return ElMessage.warning('请填写短信签名')
   if (editMode.value === 'template') {
@@ -105,6 +106,7 @@ onMounted(loadBase)
         <el-table :data="configs" v-loading="loading" stripe>
           <el-table-column prop="name" label="配置名称" /><el-table-column label="服务商"><template #default="{ row }">{{ SMSProviderLabels[row.provider] }}</template></el-table-column>
           <el-table-column prop="access_key_id" label="账号 / AccessKey" min-width="180" show-overflow-tooltip /><el-table-column prop="endpoint" label="Endpoint" min-width="180" show-overflow-tooltip />
+          <el-table-column label="默认渠道" width="100"><template #default="{ row }"><el-tag v-if="row.is_default === SMSDefault.Yes" type="success">默认</el-tag><span v-else>—</span></template></el-table-column>
           <el-table-column label="状态" width="90"><template #default="{ row }"><el-tag :type="row.status === Status.Enabled ? 'success' : 'danger'">{{ StatusLabels[row.status] }}</el-tag></template></el-table-column>
           <el-table-column label="操作" width="110"><template #default="{ row }"><el-icon v-perm="'POST:/admin/sms/config/save'" class="op-icon is-edit" @click="openEdit('config', row)"><Edit /></el-icon><el-icon v-perm="'POST:/admin/sms/config/delete'" class="op-icon is-danger" @click="remove('config', row)"><Delete /></el-icon></template></el-table-column>
         </el-table>
@@ -127,7 +129,7 @@ onMounted(loadBase)
     <el-dialog v-model="dialogVisible" :title="form.id ? '修改配置' : '新增配置'" width="600px">
       <el-form label-width="120px">
         <el-form-item label="名称" required><el-input v-model="form.name" /></el-form-item>
-        <template v-if="editMode === 'config'"><el-form-item label="服务商"><el-select v-model="form.provider"><el-option v-for="(label, value) in SMSProviderLabels" :key="value" :label="label" :value="Number(value)" /></el-select></el-form-item><el-form-item :label="currentCredential().idLabel" required><el-input v-model="form.access_key_id" :placeholder="currentCredential().idPlaceholder" /></el-form-item><el-form-item :label="currentCredential().secretLabel" :required="!form.id && currentCredential().secretRequired"><el-input v-model="form.access_key_secret" type="password" show-password :disabled="!currentCredential().secretRequired" :placeholder="form.id ? '留空表示不修改' : currentCredential().secretPlaceholder" /></el-form-item><el-form-item label="Endpoint"><el-input v-model="form.endpoint" :placeholder="`留空使用 ${currentCredential().endpoint}`" /></el-form-item></template>
+        <template v-if="editMode === 'config'"><el-form-item label="服务商"><el-select v-model="form.provider"><el-option v-for="(label, value) in SMSProviderLabels" :key="value" :label="label" :value="Number(value)" /></el-select></el-form-item><el-form-item :label="currentCredential().idLabel" required><el-input v-model="form.access_key_id" :placeholder="currentCredential().idPlaceholder" /></el-form-item><el-form-item :label="currentCredential().secretLabel" :required="!form.id && currentCredential().secretRequired"><el-input v-model="form.access_key_secret" type="password" show-password :disabled="!currentCredential().secretRequired" :placeholder="form.id ? '留空表示不修改' : currentCredential().secretPlaceholder" /></el-form-item><el-form-item label="Endpoint"><el-input v-model="form.endpoint" :placeholder="`留空使用 ${currentCredential().endpoint}`" /></el-form-item><el-form-item label="默认渠道"><el-switch v-model="form.is_default" :active-value="SMSDefault.Yes" :inactive-value="SMSDefault.No" /><span class="form-tip">发送短信时仅使用启用的默认渠道</span></el-form-item></template>
         <template v-else><el-form-item label="开发配置" required><el-select v-model="form.config_id"><el-option v-for="item in configs" :key="item.id" :label="item.name" :value="item.id" /></el-select></el-form-item></template>
         <template v-if="editMode === 'signature'"><el-form-item label="短信签名" required><el-input v-model="form.sign_code" placeholder="填写已审核签名；短信宝、云片将自动拼接到正文开头" /></el-form-item></template>
         <template v-if="editMode === 'template'"><el-form-item label="模板编码" :required="templateCodeRequired()"><el-input v-model="form.template_code" :placeholder="templateCodeRequired() ? '填写平台模板ID或编码' : '短信宝可填写产品ID，云片可留空'" /></el-form-item><el-form-item label="模板类型"><el-select v-model="form.type"><el-option v-for="(label, value) in SMSTemplateTypeLabels" :key="value" :label="label" :value="Number(value)" /></el-select></el-form-item><el-form-item label="模板内容" required><el-input v-model="form.content" type="textarea" :rows="3" placeholder="验证码变量支持 ${code}、{code}、{1} 或 #{code}" /></el-form-item></template>
@@ -137,4 +139,4 @@ onMounted(loadBase)
   </div>
 </template>
 
-<style scoped>.tab-toolbar{display:flex;gap:10px;margin-bottom:14px}</style>
+<style scoped>.tab-toolbar{display:flex;gap:10px;margin-bottom:14px}.form-tip{margin-left:10px;color:var(--el-text-color-secondary);font-size:12px}</style>

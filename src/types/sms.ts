@@ -1,6 +1,6 @@
 import type { BaseEntity, PageResult } from './common'
 
-export interface SMSConfig extends BaseEntity { name: string; provider: number; access_key_id: string; endpoint: string; status: number; remark: string }
+export interface SMSConfig extends BaseEntity { name: string; provider: number; access_key_id: string; endpoint: string; is_default: number; status: number; remark: string }
 export interface SMSConfigSave extends Omit<SMSConfig, keyof BaseEntity> { id?: number; access_key_secret?: string }
 export interface SMSSignature extends BaseEntity { config_id: number; name: string; sign_code: string; status: number; remark: string }
 export interface SMSSignatureSave extends Omit<SMSSignature, keyof BaseEntity> { id?: number }
