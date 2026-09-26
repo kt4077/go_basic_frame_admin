@@ -4,13 +4,27 @@ import { ElMessage } from 'element-plus'
 import type { ApiResponse } from '@/types/common'
 import { getToken, clearToken } from '@/utils/auth'
 import router from '@/router'
+import { useAppStore } from '@/store/app'
+import { useRequestStore } from '@/store/request'
+
+const DEFAULT_REQUEST_TIMEOUT = 30000
+const MIN_REQUEST_TIMEOUT = 1000
+const MAX_REQUEST_TIMEOUT = 300000
+
+const resolveRequestTimeout = () => {
+  const configured = Number(import.meta.env.VITE_ADMIN_API_TIMEOUT_MS)
+  if (!Number.isFinite(configured) || configured < MIN_REQUEST_TIMEOUT) return DEFAULT_REQUEST_TIMEOUT
+  return Math.min(Math.trunc(configured), MAX_REQUEST_TIMEOUT)
+}
 
 const http = axios.create({
   baseURL: import.meta.env.VITE_ADMIN_API_BASE_URL,
-  timeout: 15000,
+  timeout: resolveRequestTimeout(),
 })
 
 http.interceptors.request.use((config) => {
+  useAppStore().beginPageRefreshRequest()
+  useRequestStore().begin(config.method)
   const token = getToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -31,6 +45,8 @@ const showError = (msg: string) => {
 
 http.interceptors.response.use(
   (response) => {
+    useAppStore().endPageRefreshRequest()
+    useRequestStore().end(response.config.method)
     const res = response.data as ApiResponse
     if (res.code !== 0) {
       // 登录失效：清除本地状态并跳转登录页
@@ -48,8 +64,13 @@ http.interceptors.response.use(
     return response
   },
   (error) => {
+    useAppStore().endPageRefreshRequest()
+    useRequestStore().end(error.config?.method)
     // HTTP 层 401（后端 auth 中间件直接返回 401 状态码）
-    if (error.response?.status === 401) {
+    const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT'
+    if (isTimeout) {
+      showError('请求超时，请检查网络后重试')
+    } else if (error.response?.status === 401) {
       clearToken()
       if (router.currentRoute.value.path !== '/login') {
         showError('登录已失效，请重新登录')

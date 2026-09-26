@@ -3,6 +3,7 @@
 // 注意：router-view 不能用 route.fullPath 做 key，否则每次导航整个布局都会重建（白屏闪烁）
 import { computed } from 'vue'
 import { useAppStore } from '@/store/app'
+import GlobalRequestLoading from '@/components/GlobalRequestLoading.vue'
 
 const appStore = useAppStore()
 const watermarkOptions = computed(() => ({
@@ -15,6 +16,7 @@ const watermarkOptions = computed(() => ({
 <template>
   <div v-watermark="watermarkOptions" class="app-root">
     <router-view />
+    <GlobalRequestLoading />
   </div>
 </template>
 

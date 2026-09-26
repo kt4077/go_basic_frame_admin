@@ -7,6 +7,7 @@ const defaultAdminConfig = (): AdminPlatformConfig => ({
   logo: '',
   logo_path: '',
   system_name: '后台管理系统',
+  version: '',
 })
 
 /** 平台公开配置状态，供登录页和管理端品牌区域共用。 */

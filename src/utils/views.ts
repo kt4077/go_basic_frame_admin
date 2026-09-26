@@ -1,6 +1,6 @@
 // 从 views 目录自动收集可用页面路由（Vite 构建期扫描，新增页面文件后自动出现在下拉里）
 // 约定与动态路由一致：/x/y → src/views/x/y/index.vue 或 src/views/x/y.vue
-const modules = import.meta.glob('/src/views/**/*.vue')
+const modules = import.meta.glob(['/src/views/**/*.vue', '!/src/views/**/components/**/*.vue'])
 
 export interface ViewOption {
   path: string // 菜单路由，如 /system/user

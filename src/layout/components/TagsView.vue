@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Close, Grid, Refresh } from '@element-plus/icons-vue'
 import { useTagsStore, type TagItem } from '@/store/tags'
 import { useUserStore } from '@/store/user'
+import { useAppStore } from '@/store/app'
 import { firstLeafPath } from '@/router'
 import type { MenuItem } from '@/types/menu'
 import type { TreeNode } from '@/types/common'
@@ -13,6 +14,7 @@ const route = useRoute()
 const router = useRouter()
 const tagsStore = useTagsStore()
 const userStore = useUserStore()
+const appStore = useAppStore()
 
 /** 默认首页：固定标签，不可关闭 */
 const affixPath = computed(() => firstLeafPath(userStore.routers) || '/')
@@ -80,7 +82,7 @@ const onCloseCurrent = () => {
 /** 标签栏右上角操作 */
 const onCommand = (cmd: string) => {
   if (cmd === 'refresh') {
-    router.replace('/redirect' + route.fullPath)
+    appStore.refreshCurrentPage()
   } else if (cmd === 'closeCurrent') {
     onCloseCurrent()
   } else if (cmd === 'closeOthers') {

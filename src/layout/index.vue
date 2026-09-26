@@ -4,7 +4,7 @@ import HeaderBar from './components/HeaderBar.vue'
 import SideMenu from './components/SideMenu.vue'
 import SubMenuPanel from './components/SubMenuPanel.vue'
 import TagsView from './components/TagsView.vue'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { useAppStore } from '@/store/app'
@@ -36,6 +36,25 @@ const activeSecondLevel = computed<TreeNode<MenuItem> | null>(() => {
 const subTree = computed(() => (activeSecondLevel.value ? [activeSecondLevel.value] : []))
 const panelTitle = computed(() => activeSecondLevel.value?.data.name ?? '')
 const panelVisible = computed(() => subTree.value.length > 0)
+const pageViewKey = computed(() => `${route.fullPath}:${appStore.pageRefreshKey}`)
+
+const onPageLeave = (element: Element, done: () => void) => {
+  if (!appStore.pageRefreshing) {
+    done()
+    return
+  }
+  const htmlElement = element as HTMLElement
+  htmlElement.classList.add('page-refresh-leave-active')
+  const stop = watch(
+    () => appStore.pageRefreshing,
+    (refreshing) => {
+      if (refreshing) return
+      stop()
+      htmlElement.classList.add('page-refresh-leave-to')
+      window.setTimeout(done, 140)
+    },
+  )
+}
 </script>
 
 <template>
@@ -48,8 +67,8 @@ const panelVisible = computed(() => subTree.value.length > 0)
         <TagsView />
         <main class="layout-content">
           <router-view v-slot="{ Component }">
-            <transition name="page">
-              <component :is="Component" />
+            <transition name="page" @leave="onPageLeave">
+              <component :is="Component" :key="pageViewKey" />
             </transition>
           </router-view>
         </main>
@@ -91,8 +110,21 @@ const panelVisible = computed(() => subTree.value.length > 0)
 .layout-content {
   flex: 1;
   overflow-y: auto;
+  position: relative;
   padding: 8px 10px; /* 内容与左侧菜单/顶部标签栏的间距 */
   background: var(--page-bg);
+}
+.layout-content :deep(.page-refresh-leave-to) {
+  opacity: 0;
+}
+.layout-content :deep(.page-refresh-leave-active) {
+  position: absolute;
+  inset: 8px 10px auto;
+  z-index: 2;
+  width: calc(100% - 20px);
+  cursor: progress;
+  pointer-events: auto;
+  transition: opacity 0.14s ease;
 }
 @media (max-width: 768px) {
   .side-menu {

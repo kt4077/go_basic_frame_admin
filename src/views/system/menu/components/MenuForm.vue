@@ -2,6 +2,7 @@
 // 菜单新增/修改弹窗（组件化，父组件通过 ref 调用 openCreate / openEdit）
 import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { Delete, Plus } from '@element-plus/icons-vue'
 import { createMenu, updateMenu } from '@/api/menu'
 import type { MenuItem, MenuTreeRow } from '@/types/menu'
 import { MenuType, MenuStatus } from '@/enums/menu'
@@ -23,6 +24,7 @@ const viewOptions = getViewOptions()
 const visible = ref(false)
 const isEdit = ref(false)
 const editId = ref(0)
+const apiPaths = ref<string[]>([''])
 
 const form = reactive({
   name: '',
@@ -50,6 +52,7 @@ const openCreate = (parent?: MenuItem) => {
     status: MenuStatus.Show,
     remark: '',
   })
+  apiPaths.value = ['']
   visible.value = true
 }
 
@@ -67,7 +70,27 @@ const openEdit = (row: MenuItem) => {
     status: row.status,
     remark: row.remark,
   })
+  apiPaths.value = splitAPIPaths(row.api_path)
   visible.value = true
+}
+
+const splitAPIPaths = (value: string) => {
+  const paths = value.split(',').map((item) => item.trim()).filter(Boolean)
+  return paths.length > 0 ? paths : ['']
+}
+
+const normalizedAPIPaths = () => Array.from(new Set(
+  apiPaths.value
+    .flatMap((item) => item.split(','))
+    .map((item) => item.trim().replace(/^([a-z]+):/i, (_, method: string) => `${method.toUpperCase()}:`))
+    .filter(Boolean),
+))
+
+const addAPIPath = () => apiPaths.value.push('')
+
+const removeAPIPath = (index: number) => {
+  apiPaths.value.splice(index, 1)
+  if (apiPaths.value.length === 0) apiPaths.value.push('')
 }
 
 const submit = async () => {
@@ -75,10 +98,17 @@ const submit = async () => {
     ElMessage.warning('请输入名称')
     return
   }
-  if (form.type === MenuType.Button && !form.api_path.trim()) {
+  const paths = normalizedAPIPaths()
+  if (form.type === MenuType.Button && paths.length === 0) {
     ElMessage.warning('按钮权限必须绑定后端接口地址')
     return
   }
+  const invalidPath = paths.find((item) => !/^(GET|POST|PUT|PATCH|DELETE):\/\S+$/i.test(item))
+  if (invalidPath) {
+    ElMessage.warning(`后端接口格式不正确：${invalidPath}`)
+    return
+  }
+  form.api_path = paths.join(',')
   if (isEdit.value) {
     await updateMenu({ ...form, id: editId.value, parent_id: form.parent_id ?? 0 })
   } else {
@@ -136,7 +166,16 @@ defineExpose({ openCreate, openEdit })
         </el-select>
       </el-form-item>
       <el-form-item label="后端接口" :required="form.type === MenuType.Button">
-        <el-input v-model="form.api_path" placeholder="如 GET:/admin/user/list，多个用英文逗号分隔" />
+        <div class="api-path-editor">
+          <div v-for="(_, index) in apiPaths" :key="index" class="api-path-row">
+            <el-input v-model="apiPaths[index]" placeholder="如 GET:/admin/user/list" clearable />
+            <el-tooltip content="删除此接口" placement="top">
+              <el-button :icon="Delete" circle plain type="danger" @click="removeAPIPath(index)" />
+            </el-tooltip>
+          </div>
+          <el-button class="api-path-add" :icon="Plus" plain @click="addAPIPath">添加接口</el-button>
+          <div class="api-path-tip">每行配置一个“请求方法:接口路径”，保存后仍以英文逗号存入数据库</div>
+        </div>
       </el-form-item>
       <el-form-item v-if="form.type !== MenuType.Button" label="图标">
         <IconSelector v-model="form.icon" placeholder="点击右侧按钮选择图标" />
@@ -166,5 +205,23 @@ defineExpose({ openCreate, openEdit })
   float: right;
   font-size: 12px;
   color: var(--el-text-color-secondary);
+}
+.api-path-editor {
+  width: 100%;
+}
+.api-path-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.api-path-add {
+  width: 100%;
+  border-style: dashed;
+}
+.api-path-tip {
+  margin-top: 6px;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  line-height: 1.5;
 }
 </style>
