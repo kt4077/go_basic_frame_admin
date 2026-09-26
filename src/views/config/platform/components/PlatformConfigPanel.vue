@@ -24,6 +24,7 @@ const form = reactive({
   default_nickname: '',
   default_avatar: '',
 })
+const systemVersion = ref('')
 
 const isAdmin = computed(() => props.type === PlatformType.Admin)
 const savePermission = computed(() => isAdmin.value
@@ -42,6 +43,7 @@ const load = async () => {
       const result = await getAdminPlatformConfig()
       form.logo = result.logo
       form.system_name = result.system_name
+      systemVersion.value = result.version
       platformStore.setAdminConfig(result)
     } else {
       const result = await getUserPlatformConfig()
@@ -97,6 +99,10 @@ onMounted(load)
           <el-form-item label="系统名称" prop="system_name">
             <el-input v-model="form.system_name" maxlength="100" show-word-limit placeholder="请输入管理端系统名称" />
             <div class="field-help">用于管理后台左上角品牌区域展示。</div>
+          </el-form-item>
+          <el-form-item label="系统版本">
+            <el-input :model-value="systemVersion" disabled />
+            <div class="field-help">版本号在服务端 config.yaml 中配置，修改后重启服务生效。</div>
           </el-form-item>
         </template>
 

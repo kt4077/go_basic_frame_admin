@@ -84,12 +84,14 @@ pnpm install
 
 ```dotenv
 VITE_ADMIN_API_BASE_URL=http://127.0.0.1:8001
+VITE_ADMIN_API_TIMEOUT_MS=30000
 ```
 
 生产环境读取 `.env.production`，默认使用当前站点域名：
 
 ```dotenv
 VITE_ADMIN_API_BASE_URL=/
+VITE_ADMIN_API_TIMEOUT_MS=30000
 ```
 
 也可以在 CI/CD 构建环境中覆盖该变量。变量必须以 `VITE_` 开头，修改后需要重新启动开发服务或重新构建。
@@ -143,10 +145,12 @@ pnpm preview
 所有请求通过 `src/api/http.ts`：
 
 - `baseURL` 来自 `VITE_ADMIN_API_BASE_URL`；
+- 全局请求超时时间来自 `VITE_ADMIN_API_TIMEOUT_MS`，单位毫秒，默认 30000，允许范围 1000-300000；特殊接口可单独覆盖 Axios `timeout`；
 - 自动携带 `Authorization: Bearer <token>`；
 - 统一解析后端 `{ code, msg, data }`；
 - HTTP 或业务码 `401` 时清除登录态并跳转登录页；
 - 并发错误提示会在短时间内去重。
+- 请求超时统一提示“请求超时，请检查网络后重试”，并正确结束全局 Loading。
 
 新增接口时应在 `src/api/<module>.ts` 中封装，并在 `src/types/<module>.ts` 中定义请求和响应类型。
 

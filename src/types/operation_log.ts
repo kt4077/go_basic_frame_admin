@@ -19,3 +19,8 @@ export interface OperationLogItem extends BaseEntity {
   cost_ms: number
   client: string
 }
+
+/** 操作日志物理删除结果 */
+export interface OperationLogDeleteResult {
+  deleted: number
+}

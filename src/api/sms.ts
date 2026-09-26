@@ -1,7 +1,8 @@
 import { request } from './http'
-import type { SMSConfig, SMSConfigSave, SMSSignature, SMSSignatureSave, SMSTemplate, SMSTemplateSave, SMSLogPage } from '@/types/sms'
+import type { SMSConfig, SMSConfigSave, SMSConfigTest, SMSConfigTestResult, SMSSignature, SMSSignatureSave, SMSTemplate, SMSTemplateSave, SMSLogPage } from '@/types/sms'
 export const getSMSConfigs = () => request<SMSConfig[]>({ url: '/admin/sms/config/list', method: 'get' })
 export const saveSMSConfig = (data: SMSConfigSave) => request<SMSConfig>({ url: '/admin/sms/config/save', method: 'post', data })
+export const testSMSConfig = (data: SMSConfigTest) => request<SMSConfigTestResult>({ url: '/admin/sms/config/test', method: 'post', data })
 export const deleteSMSConfig = (id: number) => request<null>({ url: '/admin/sms/config/delete', method: 'post', data: { id } })
 export const getSMSSignatures = () => request<SMSSignature[]>({ url: '/admin/sms/signature/list', method: 'get' })
 export const saveSMSSignature = (data: SMSSignatureSave) => request<SMSSignature>({ url: '/admin/sms/signature/save', method: 'post', data })

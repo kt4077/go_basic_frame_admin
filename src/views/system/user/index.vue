@@ -2,7 +2,7 @@
 // 人员管理：人员 CRUD、角色分配、重置密码、踢下线
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Edit, Delete, Key, SwitchButton, Search } from '@element-plus/icons-vue'
+import { Edit, Delete, Key, SwitchButton, Search, Refresh } from '@element-plus/icons-vue'
 import { getUserList, createUser, updateUser, deleteUser, resetUserPassword, kickUser } from '@/api/user'
 import { formatDateTimeCell } from '@/utils/datetime'
 import { getDeptTree } from '@/api/dept'
@@ -139,6 +139,14 @@ const onKick = async (row: UserItem) => {
   ElMessage.success('操作成功')
 }
 
+const reset = () => {
+  query.keyword = ''
+  query.status = undefined
+  query.dept_id = undefined
+  query.page = 1
+  load()
+}
+
 onMounted(() => {
   load()
   loadOptions()
@@ -169,6 +177,7 @@ onMounted(() => {
           @change="query.page = 1; load()"
         />
         <el-button type="primary" :icon="Search" @click="query.page = 1; load()">搜索</el-button>
+        <el-button :icon="Refresh" @click="reset">重置</el-button>
       </div>
       <el-button v-perm="'POST:/admin/user/add'" type="primary" @click="openCreate()">新增人员</el-button>
     </div>
