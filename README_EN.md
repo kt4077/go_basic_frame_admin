@@ -84,12 +84,14 @@ Development reads `.env.development`:
 
 ```dotenv
 VITE_ADMIN_API_BASE_URL=http://127.0.0.1:8001
+VITE_ADMIN_API_TIMEOUT_MS=30000
 ```
 
 Production reads `.env.production`, which defaults to the current site origin:
 
 ```dotenv
 VITE_ADMIN_API_BASE_URL=/
+VITE_ADMIN_API_TIMEOUT_MS=30000
 ```
 
 The variable can also be overridden in CI/CD. Variables must start with `VITE_`; restart the dev server or rebuild after changes.
@@ -143,10 +145,12 @@ Front-end permissions only control presentation; the real boundary is enforced b
 All requests go through `src/api/http.ts`:
 
 - `baseURL` comes from `VITE_ADMIN_API_BASE_URL`;
+- The global timeout comes from `VITE_ADMIN_API_TIMEOUT_MS` in milliseconds; it defaults to 30000 and accepts 1000-300000, while individual requests may override Axios `timeout`;
 - `Authorization: Bearer <token>` is attached automatically;
 - The backend `{ code, msg, data }` envelope is parsed centrally;
 - HTTP or business code `401` clears the session and redirects to the login page;
 - Concurrent error toasts are deduplicated within a short window.
+- Timed-out requests show a clear retry message and always close the global loading state.
 
 Add new endpoints in `src/api/<module>.ts` and declare types in `src/types/<module>.ts`.
 

@@ -3,7 +3,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Moon, Sunny, Setting, ArrowDown, ArrowRight, Fold, Expand, FullScreen, Location } from '@element-plus/icons-vue'
+import { Moon, Sunny, Setting, ArrowDown, ArrowRight, Fold, Expand, FullScreen, Location, Refresh } from '@element-plus/icons-vue'
 import { useAppStore } from '@/store/app'
 import { useUserStore } from '@/store/user'
 import { usePlatformStore } from '@/store/platform'
@@ -27,7 +27,9 @@ onMounted(() => {
   document.addEventListener('fullscreenchange', onFullscreenChange)
   platformStore.loadAdminConfig()
 })
-onBeforeUnmount(() => document.removeEventListener('fullscreenchange', onFullscreenChange))
+onBeforeUnmount(() => {
+  document.removeEventListener('fullscreenchange', onFullscreenChange)
+})
 const toggleFullscreen = () => {
   if (document.fullscreenElement) {
     document.exitFullscreen()
@@ -75,19 +77,31 @@ const onLogout = async () => {
 }
 
 const openProfile = () => router.push('/profile')
+
+const refreshCurrentPage = () => {
+  if (appStore.pageRefreshing || route.path.startsWith('/redirect/')) return
+  appStore.refreshCurrentPage()
+}
 </script>
 
 <template>
   <header class="header-bar">
     <div class="brand">
-      <div class="brand-mark" :class="{ 'has-logo': platformStore.adminConfig.logo }">
-        <img v-if="platformStore.adminConfig.logo" :src="platformStore.adminConfig.logo" alt="系统Logo" />
-        <el-icon v-else :size="17"><Platform /></el-icon>
+      <div class="brand-identity" :class="{ collapsed: appStore.sidebarCollapsed }">
+        <div class="brand-mark" :class="{ 'has-logo': platformStore.adminConfig.logo }">
+          <img v-if="platformStore.adminConfig.logo" :src="platformStore.adminConfig.logo" alt="系统Logo" />
+          <el-icon v-else :size="17"><Platform /></el-icon>
+        </div>
+        <span class="brand-name">{{ platformStore.adminConfig.system_name }}</span>
       </div>
-      <span class="brand-name">{{ platformStore.adminConfig.system_name }}</span>
       <el-tooltip :content="appStore.sidebarCollapsed ? '展开菜单' : '收起菜单'" placement="bottom">
-        <button class="header-action collapse-toggle" @click="appStore.toggleSidebar()">
+        <button class="header-action" @click="appStore.toggleSidebar()">
           <el-icon :size="17"><component :is="appStore.sidebarCollapsed ? Expand : Fold" /></el-icon>
+        </button>
+      </el-tooltip>
+      <el-tooltip content="刷新当前页面" placement="bottom">
+        <button class="header-action" :disabled="appStore.pageRefreshing" @click="refreshCurrentPage">
+          <el-icon :size="17" :class="{ 'is-loading': appStore.pageRefreshing }"><Refresh /></el-icon>
         </button>
       </el-tooltip>
     </div>
@@ -174,7 +188,21 @@ const openProfile = () => router.push('/profile')
 .brand {
   display: flex;
   align-items: center;
+  gap: 4px;
+}
+.brand-identity {
+  width: 184px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
   gap: 10px;
+  overflow: hidden;
+  transition: width 0.2s ease, gap 0.2s ease;
+}
+.brand-identity.collapsed {
+  width: 48px;
+  gap: 0;
+  justify-content: center;
 }
 .brand-mark {
   width: 30px;
@@ -187,6 +215,13 @@ const openProfile = () => router.push('/profile')
   justify-content: center;
   box-shadow: 0 2px 8px rgba(59, 110, 246, 0.35);
   overflow: hidden;
+  flex-shrink: 0;
+  transition: width 0.2s ease, height 0.2s ease, border-radius 0.2s ease;
+}
+.brand-identity.collapsed .brand-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
 }
 .brand-mark img {
   display: block;
@@ -203,9 +238,14 @@ const openProfile = () => router.push('/profile')
   font-size: 16px;
   font-weight: 600;
   letter-spacing: 0.5px;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.15s ease;
 }
-.collapse-toggle {
-  margin-left: 12px;
+.brand-identity.collapsed .brand-name {
+  width: 0;
+  opacity: 0;
 }
 .page-meta {
   min-width: 0;
@@ -278,6 +318,10 @@ const openProfile = () => router.push('/profile')
   background: var(--sidebar-hover-bg);
   color: var(--el-color-primary);
 }
+.header-action:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
 .user-chip {
   display: flex;
   align-items: center;
@@ -317,13 +361,26 @@ const openProfile = () => router.push('/profile')
     max-width: 180px;
   }
 }
+@media (max-width: 768px) {
+  .brand-identity {
+    width: 48px;
+    gap: 0;
+    justify-content: center;
+  }
+  .brand-identity .brand-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+  }
+  .brand-identity .brand-name {
+    width: 0;
+    opacity: 0;
+  }
+}
 @media (max-width: 640px) {
   .brand-name,
   .page-meta {
     display: none;
-  }
-  .collapse-toggle {
-    margin-left: 2px;
   }
   .user-name {
     display: none;
