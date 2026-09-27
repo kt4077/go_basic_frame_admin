@@ -2,7 +2,7 @@
 // 菜单按钮管理：目录/菜单/按钮多级配置，按钮需绑定后端接口地址
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Edit, Delete, Search } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, Search, Refresh } from '@element-plus/icons-vue'
 import { getMenuList, getMenuTree, deleteMenu } from '@/api/menu'
 import type { MenuItem } from '@/types/menu'
 import type { TreeNode } from '@/types/common'
@@ -41,6 +41,11 @@ const load = async () => {
   }
 }
 
+const reset = async () => {
+  keyword.value = ''
+  await load()
+}
+
 const apiPaths = (value: string) => value.split(',').map((item) => item.trim()).filter(Boolean)
 
 const onDelete = async (row: MenuItem) => {
@@ -60,6 +65,7 @@ onMounted(load)
         <h4>菜单按钮管理</h4>
         <el-input v-model="keyword" placeholder="按名称搜索" clearable style="width: 220px" @keyup.enter="load" />
         <el-button type="primary" :icon="Search" @click="load()">搜索</el-button>
+        <el-button :icon="Refresh" @click="reset">重置</el-button>
       </div>
       <el-button v-perm="'POST:/admin/menu/add'" type="primary" @click="formRef?.openCreate()">新增菜单</el-button>
     </div>

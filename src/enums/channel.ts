@@ -12,5 +12,21 @@ export const SMSTemplateTypeLabels: Record<number, string> = { 1: '验证码', 2
 export const SMSSendStatusLabels: Record<number, string> = { 1: '待发送', 2: '成功', 3: '失败' }
 export const WechatType = { Official: 1, Open: 2, MiniApp: 3 } as const
 export const WechatTypeLabels: Record<number, string> = { 1: '微信公众号', 2: '微信开放平台', 3: '微信小程序' }
+export const OpenPlatform = {
+  Wechat: 1,
+  Alipay: 2,
+  Baidu: 3,
+  Douyin: 4,
+  QQ: 5,
+  Kuaishou: 6,
+} as const
+export const OpenPlatformLabels: Record<number, string> = {
+  1: '微信',
+  2: '支付宝小程序',
+  3: '百度小程序',
+  4: '抖音小程序',
+  5: 'QQ 小程序',
+  6: '快手小程序',
+}
 export const PaymentChannel = { Wechat: 1, Alipay: 2 } as const
 export const PaymentChannelLabels: Record<number, string> = { 1: '微信支付', 2: '支付宝' }

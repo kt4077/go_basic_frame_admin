@@ -12,6 +12,7 @@ const props = withDefaults(defineProps<{
   showTip?: boolean
   editBadge?: boolean
   showRemove?: boolean
+  previewUrl?: string
   afterUpload?: (relativePath: string) => Promise<void>
 }>(), {
   size: 88,
@@ -32,7 +33,15 @@ const style = computed(() => ({
   height: `${props.size}px`,
   borderRadius: props.shape === 'circle' ? '50%' : '14px',
 }))
-const previewURL = computed(() => uploadedPreview.value || props.modelValue)
+const previewURL = computed(() => {
+  if (uploadedPreview.value) {
+    return uploadedPreview.value
+  }
+  if (!props.modelValue) {
+    return ''
+  }
+  return props.previewUrl || props.modelValue
+})
 
 const upload = async (options: UploadRequestOptions) => {
   const file = options.file
