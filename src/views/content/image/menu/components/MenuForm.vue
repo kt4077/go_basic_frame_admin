@@ -17,7 +17,7 @@ watch(() => props.modelValue, (value: boolean) => { if (value) Object.assign(for
       <el-form-item label="展示位置"><el-select v-model="form.position"><el-option v-for="item in contentPositions" :key="item.value" v-bind="item" /></el-select></el-form-item>
       <el-form-item label="展示平台"><el-checkbox-group v-model="form.platforms"><el-checkbox v-for="item in platformOptions" :key="item.value" :value="item.value">{{ item.label }}</el-checkbox></el-checkbox-group></el-form-item>
       <el-form-item label="展示形式"><el-radio-group v-model="form.display_type"><el-radio v-for="item in displayTypes" :key="item.value" :value="item.value">{{ item.label }}</el-radio></el-radio-group></el-form-item>
-      <el-form-item v-if="form.display_type === 1" label="Wot 图标"><el-input v-model="form.icon" placeholder="例如：home、user-circle、star" /></el-form-item>
+      <el-form-item v-if="form.display_type === 1" label="Wot 图标"><el-input v-model="form.icon" placeholder="例如：home、user、star、message" /></el-form-item>
       <el-form-item v-else label="菜单图片">
         <AvatarUpload
           v-model="form.image_path"
