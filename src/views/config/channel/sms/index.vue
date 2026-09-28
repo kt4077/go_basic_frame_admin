@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Edit, Delete, Plus, Search } from '@element-plus/icons-vue'
+import { Edit, Delete, Plus, Search, Refresh } from '@element-plus/icons-vue'
 import { deleteSMSConfig, deleteSMSSignature, deleteSMSTemplate, getSMSConfigs, getSMSLogs, getSMSSignatures, getSMSTemplates, saveSMSConfig, saveSMSSignature, saveSMSTemplate, testSMSConfig } from '@/api/sms'
 import type { SMSConfig, SMSSignature, SMSTemplate, SMSSendLog } from '@/types/sms'
 import { SMSDefault, SMSProvider, SMSProviderLabels, SMSSendStatusLabels, SMSTemplateType, SMSTemplateTypeLabels } from '@/enums/channel'
@@ -49,6 +49,12 @@ const loadLogs = async () => {
     logs.value = result.list
     logTotal.value = result.total
   } finally { loading.value = false }
+}
+const resetLogQuery = async () => {
+  logQuery.mobile = ''
+  logQuery.status = undefined
+  logQuery.page = 1
+  await loadLogs()
 }
 const onTabChange = (name: string | number) => { if (String(name) === 'logs') loadLogs() }
 const openCreate = (mode: EditMode) => {
@@ -145,7 +151,7 @@ onMounted(loadBase)
         <el-table :data="templates" stripe><el-table-column prop="name" label="模板名称" /><el-table-column label="开发配置"><template #default="{ row }">{{ configName(row.config_id) }}</template></el-table-column><el-table-column prop="template_code" label="模板编码" /><el-table-column label="类型"><template #default="{ row }">{{ SMSTemplateTypeLabels[row.type] }}</template></el-table-column><el-table-column prop="content" label="内容" show-overflow-tooltip /><el-table-column label="操作" width="110"><template #default="{ row }"><el-icon v-perm="'POST:/admin/sms/template/save'" class="op-icon is-edit" @click="openEdit('template', row)"><Edit /></el-icon><el-icon v-perm="'POST:/admin/sms/template/delete'" class="op-icon is-danger" @click="remove('template', row)"><Delete /></el-icon></template></el-table-column></el-table>
       </el-tab-pane>
       <el-tab-pane label="发送记录" name="logs">
-        <div class="tab-toolbar"><el-input v-model="logQuery.mobile" placeholder="手机号" clearable style="width: 200px" /><el-select v-model="logQuery.status" placeholder="发送状态" clearable style="width: 140px"><el-option v-for="(label, value) in SMSSendStatusLabels" :key="value" :label="label" :value="Number(value)" /></el-select><el-button :icon="Search" @click="logQuery.page = 1; loadLogs()">查询</el-button></div>
+        <div class="tab-toolbar"><el-input v-model="logQuery.mobile" placeholder="手机号" clearable style="width: 200px" /><el-select v-model="logQuery.status" placeholder="发送状态" clearable style="width: 140px"><el-option v-for="(label, value) in SMSSendStatusLabels" :key="value" :label="label" :value="Number(value)" /></el-select><el-button type="primary" :icon="Search" @click="logQuery.page = 1; loadLogs()">查询</el-button><el-button :icon="Refresh" @click="resetLogQuery">重置</el-button></div>
         <el-table :data="logs" stripe><el-table-column prop="created_at" label="创建时间" width="170" :formatter="formatDateTimeCell" /><el-table-column prop="mobile" label="手机号" /><el-table-column prop="content" label="内容" min-width="220" show-overflow-tooltip /><el-table-column label="状态"><template #default="{ row }">{{ SMSSendStatusLabels[row.status] }}</template></el-table-column><el-table-column prop="provider_message_id" label="平台消息ID" /><el-table-column prop="error_message" label="错误信息" show-overflow-tooltip /></el-table>
         <AppPagination v-model:page="logQuery.page" v-model:page-size="logQuery.page_size" :total="logTotal" @change="loadLogs" />
       </el-tab-pane>
