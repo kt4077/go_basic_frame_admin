@@ -2,7 +2,18 @@
 // 插件管理：查看安装及迁移信息，维护下次服务启动时生效的启停状态。
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Edit, InfoFilled, Refresh, Search, VideoPause, VideoPlay, View } from '@element-plus/icons-vue'
+import {
+  Clock,
+  Edit,
+  InfoFilled,
+  Link,
+  Refresh,
+  Search,
+  User,
+  VideoPause,
+  VideoPlay,
+  View,
+} from '@element-plus/icons-vue'
 import { getPluginDetail, getPluginList, updatePluginInfo, updatePluginStatus } from '@/api/plugin'
 import AppPagination from '@/components/AppPagination.vue'
 import AvatarUpload from '@/components/AvatarUpload.vue'
@@ -163,81 +174,114 @@ onMounted(load)
       title="插件采用编译期注册，启用或停用后必须重启管理端 API 和用户端 API 才会生效。"
     />
 
-    <el-table :data="list" v-loading="loading" stripe>
-      <el-table-column label="插件" min-width="190">
-        <template #default="{ row }">
-          <div class="plugin-identity">
-            <el-avatar :size="38" shape="square" :src="row.logo_url">
-              {{ row.name.slice(0, 1) }}
-            </el-avatar>
-            <span>{{ row.name }}</span>
+    <div v-loading="loading" class="plugin-card-area">
+      <div v-if="list.length" class="plugin-card-list">
+        <article v-for="row in list" :key="row.plugin_id" class="plugin-card">
+          <div class="plugin-card__header">
+            <div class="plugin-card__identity">
+              <el-avatar :size="56" shape="square" :src="row.logo_url" class="plugin-card__logo">
+                {{ row.name.slice(0, 1) }}
+              </el-avatar>
+              <div class="plugin-card__heading">
+                <div class="plugin-card__title-line">
+                  <h5>{{ row.name }}</h5>
+                  <el-tag
+                    :type="row.status === PluginStatus.Enabled ? 'success' : 'info'"
+                    size="small"
+                    effect="light"
+                    round
+                  >
+                    {{ PluginStatusLabels[row.status] ?? '未知' }}
+                  </el-tag>
+                </div>
+                <code>{{ row.plugin_id }}</code>
+              </div>
+            </div>
           </div>
-        </template>
-      </el-table-column>
-      <el-table-column prop="author" label="插件作者" min-width="120">
-        <template #default="{ row }">{{ row.author || '-' }}</template>
-      </el-table-column>
-      <el-table-column prop="plugin_id" label="插件标识" min-width="150">
-        <template #default="{ row }"><code>{{ row.plugin_id }}</code></template>
-      </el-table-column>
-      <el-table-column prop="version" label="安装版本" width="110" />
-      <el-table-column label="程序版本" width="120">
-        <template #default="{ row }">
-          <span v-if="row.compiled">{{ row.code_version }}</span>
-          <el-tag v-else type="danger" size="small">未编译</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="版本检查" width="110">
-        <template #default="{ row }">
-          <el-tag
-            :type="row.compiled && row.version === row.code_version ? 'success' : 'warning'"
-            size="small"
-            effect="plain"
-          >
-            {{ row.compiled && row.version === row.code_version ? '一致' : '需处理' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" width="100">
-        <template #default="{ row }">
-          <el-tag :type="row.status === PluginStatus.Enabled ? 'success' : 'info'" size="small">
-            {{ PluginStatusLabels[row.status] ?? '未知' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="updated_at" label="更新时间" width="170" :formatter="formatDateTimeCell" />
-      <el-table-column label="操作" width="185" fixed="right">
-        <template #default="{ row }">
-          <div class="table-operations">
-            <el-tooltip content="查看详情" placement="top">
-              <el-icon class="op-icon" @click="showDetail(row)"><View /></el-icon>
-            </el-tooltip>
-            <el-tooltip content="编辑插件信息" placement="top">
-              <el-icon
-                v-perm="'POST:/admin/plugin/info'"
-                class="op-icon is-edit"
-                @click="editInfo(row)"
-              ><Edit /></el-icon>
-            </el-tooltip>
-            <el-tooltip :content="statusActionText(row)" placement="top">
-              <el-icon
-                v-perm="'POST:/admin/plugin/status'"
-                class="op-icon"
-                :class="{
-                  'is-enable': row.status !== PluginStatus.Enabled,
-                  'is-danger': row.status === PluginStatus.Enabled,
-                  'is-disabled': !canChangeStatus(row),
-                }"
-                @click="canChangeStatus(row) && changeStatus(row)"
+
+          <p class="plugin-card__description" :title="row.description">
+            {{ row.description || '该插件暂未填写功能描述。' }}
+          </p>
+
+          <div class="plugin-card__information">
+            <div class="plugin-card__info-item">
+              <el-icon><User /></el-icon>
+              <span>{{ row.author || '未填写作者' }}</span>
+            </div>
+            <a
+              v-if="row.homepage"
+              class="plugin-card__info-item plugin-card__link"
+              :href="row.homepage"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="打开插件主页"
+            >
+              <el-icon><Link /></el-icon>
+              <span>插件主页</span>
+            </a>
+            <div v-else class="plugin-card__info-item is-muted">
+              <el-icon><Link /></el-icon>
+              <span>未填写主页</span>
+            </div>
+          </div>
+
+          <div class="plugin-card__versions">
+            <div class="plugin-version-item">
+              <span>安装版本</span>
+              <strong>v{{ row.version }}</strong>
+            </div>
+            <div class="plugin-version-item">
+              <span>程序版本</span>
+              <strong v-if="row.compiled">v{{ row.code_version }}</strong>
+              <strong v-else class="is-error">未编译</strong>
+            </div>
+            <div class="plugin-version-item">
+              <span>版本检查</span>
+              <strong
+                :class="row.compiled && row.version === row.code_version ? 'is-success' : 'is-warning'"
               >
-                <VideoPause v-if="row.status === PluginStatus.Enabled" />
-                <VideoPlay v-else />
-              </el-icon>
-            </el-tooltip>
+                {{ row.compiled && row.version === row.code_version ? '版本一致' : '需要处理' }}
+              </strong>
+            </div>
           </div>
-        </template>
-      </el-table-column>
-    </el-table>
+
+          <div class="plugin-card__footer">
+            <div class="plugin-card__updated">
+              <el-icon><Clock /></el-icon>
+              <span>{{ formatDateTime(row.updated_at) }}</span>
+            </div>
+            <div class="table-operations plugin-card__operations">
+              <el-tooltip content="查看详情" placement="top">
+                <el-icon class="op-icon" @click="showDetail(row)"><View /></el-icon>
+              </el-tooltip>
+              <el-tooltip content="编辑插件信息" placement="top">
+                <el-icon
+                  v-perm="'POST:/admin/plugin/info'"
+                  class="op-icon is-edit"
+                  @click="editInfo(row)"
+                ><Edit /></el-icon>
+              </el-tooltip>
+              <el-tooltip :content="statusActionText(row)" placement="top">
+                <el-icon
+                  v-perm="'POST:/admin/plugin/status'"
+                  class="op-icon"
+                  :class="{
+                    'is-enable': row.status !== PluginStatus.Enabled,
+                    'is-danger': row.status === PluginStatus.Enabled,
+                    'is-disabled': !canChangeStatus(row),
+                  }"
+                  @click="canChangeStatus(row) && changeStatus(row)"
+                >
+                  <VideoPause v-if="row.status === PluginStatus.Enabled" />
+                  <VideoPlay v-else />
+                </el-icon>
+              </el-tooltip>
+            </div>
+          </div>
+        </article>
+      </div>
+      <el-empty v-else-if="!loading" description="暂无符合条件的插件" :image-size="108" />
+    </div>
 
     <AppPagination
       v-model:page="query.page"
@@ -353,14 +397,204 @@ onMounted(load)
   flex-wrap: wrap;
   gap: 12px;
 }
-.plugin-identity {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 500;
-}
 .restart-alert {
   margin-bottom: 16px;
+}
+.plugin-card-area {
+  min-height: 260px;
+}
+.plugin-card-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 18px;
+}
+.plugin-card {
+  position: relative;
+  display: flex;
+  flex: 1 1 360px;
+  flex-direction: column;
+  min-width: 0;
+  max-width: calc(33.333% - 12px);
+  overflow: hidden;
+  padding: 20px;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0, var(--el-color-primary-light-9) 0, transparent 38%),
+    var(--card-bg);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 5%);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.plugin-card::before {
+  position: absolute;
+  top: 0;
+  right: 24px;
+  left: 24px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, transparent, var(--el-color-primary), transparent);
+  content: '';
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.plugin-card:hover {
+  border-color: var(--el-color-primary-light-5);
+  box-shadow: 0 14px 34px rgb(15 23 42 / 10%);
+  transform: translateY(-2px);
+}
+.plugin-card:hover::before {
+  opacity: 1;
+}
+.plugin-card__header,
+.plugin-card__identity,
+.plugin-card__title-line,
+.plugin-card__information,
+.plugin-card__info-item,
+.plugin-card__footer,
+.plugin-card__updated {
+  display: flex;
+  align-items: center;
+}
+.plugin-card__identity {
+  min-width: 0;
+  gap: 14px;
+}
+.plugin-card__logo {
+  flex: 0 0 auto;
+  border: 1px solid var(--card-border);
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+  font-size: 20px;
+  font-weight: 700;
+}
+.plugin-card__heading {
+  min-width: 0;
+}
+.plugin-card__title-line {
+  min-width: 0;
+  gap: 8px;
+}
+.plugin-card__title-line h5 {
+  overflow: hidden;
+  margin: 0;
+  color: var(--el-text-color-primary);
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.plugin-card__heading code {
+  display: block;
+  overflow: hidden;
+  margin-top: 3px;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.plugin-card__description {
+  display: -webkit-box;
+  min-height: 44px;
+  overflow: hidden;
+  margin: 17px 0 14px;
+  color: var(--el-text-color-regular);
+  font-size: 13px;
+  line-height: 1.7;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.plugin-card__information {
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+}
+.plugin-card__info-item {
+  min-width: 0;
+  gap: 5px;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  text-decoration: none;
+}
+.plugin-card__info-item .el-icon {
+  flex: 0 0 auto;
+  color: var(--el-color-primary);
+  font-size: 14px;
+}
+.plugin-card__info-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.plugin-card__link:hover {
+  color: var(--el-color-primary);
+}
+.plugin-card__info-item.is-muted .el-icon {
+  color: var(--el-text-color-placeholder);
+}
+.plugin-card__versions {
+  display: flex;
+  margin-top: auto;
+  padding: 13px 0;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--page-bg);
+}
+.plugin-version-item {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0 10px;
+  text-align: center;
+}
+.plugin-version-item + .plugin-version-item {
+  border-left: 1px solid var(--card-border);
+}
+.plugin-version-item span {
+  color: var(--el-text-color-secondary);
+  font-size: 11px;
+}
+.plugin-version-item strong {
+  overflow: hidden;
+  margin-top: 5px;
+  color: var(--el-text-color-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.plugin-version-item strong.is-success {
+  color: var(--el-color-success);
+}
+.plugin-version-item strong.is-warning {
+  color: var(--el-color-warning);
+}
+.plugin-version-item strong.is-error {
+  color: var(--el-color-danger);
+}
+.plugin-card__footer {
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--card-border);
+}
+.plugin-card__updated {
+  min-width: 0;
+  gap: 5px;
+  color: var(--el-text-color-placeholder);
+  font-size: 11px;
+}
+.plugin-card__updated span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.plugin-card__operations {
+  flex: 0 0 auto;
 }
 .op-icon.is-enable {
   color: var(--el-color-success);
@@ -418,5 +652,23 @@ onMounted(load)
   line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-all;
+}
+@media (max-width: 1280px) {
+  .plugin-card {
+    max-width: calc(50% - 9px);
+  }
+}
+@media (max-width: 760px) {
+  .plugin-card-list {
+    gap: 14px;
+  }
+  .plugin-card {
+    flex-basis: 100%;
+    max-width: 100%;
+    padding: 17px;
+  }
+  .plugin-card__versions {
+    padding: 11px 0;
+  }
 }
 </style>
