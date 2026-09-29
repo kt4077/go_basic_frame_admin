@@ -8,7 +8,11 @@ const props = defineProps<{ modelValue: boolean; data?: ContentMenu }>()
 const emit = defineEmits<{ 'update:modelValue': [value: boolean]; 'submit': [value: ContentMenu] }>()
 const empty = (): ContentMenu => ({ id: 0, name: '', position: 1, platforms: [1, 5], display_type: 1, icon: '', image_path: '', link_type: 1, link_url: '', status: 1, sort: 0, remark: '' })
 const form = reactive<ContentMenu>(empty())
-watch(() => props.modelValue, (value: boolean) => { if (value) Object.assign(form, empty(), props.data || {}) })
+watch(() => props.modelValue, (value: boolean) => {
+  if (!value) return
+  Object.assign(form, empty(), props.data || {})
+  form.image_path = props.data?.image_url || props.data?.image_path || ''
+})
 </script>
 <template>
   <el-drawer :model-value="modelValue" :title="form.id ? '修改菜单' : '新增菜单'" size="560px" @close="emit('update:modelValue', false)">

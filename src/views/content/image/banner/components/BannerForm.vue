@@ -8,7 +8,11 @@ const props = defineProps<{ modelValue: boolean; data?: ContentBanner }>()
 const emit = defineEmits<{ 'update:modelValue': [value: boolean]; 'submit': [value: ContentBanner] }>()
 const empty = (): ContentBanner => ({ id: 0, title: '', position: 1, platforms: [1, 5], image_path: '', link_type: 1, link_url: '', status: 1, sort: 0, remark: '' })
 const form = reactive<ContentBanner>(empty())
-watch(() => props.modelValue, (value: boolean) => { if (value) Object.assign(form, empty(), props.data || {}) })
+watch(() => props.modelValue, (value: boolean) => {
+  if (!value) return
+  Object.assign(form, empty(), props.data || {})
+  form.image_path = props.data?.image_url || props.data?.image_path || ''
+})
 </script>
 <template>
   <el-drawer :model-value="modelValue" :title="form.id ? '修改轮播图' : '新增轮播图'" size="560px" @close="emit('update:modelValue', false)">

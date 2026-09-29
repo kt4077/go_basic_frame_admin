@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<{
   editBadge?: boolean
   showRemove?: boolean
   previewUrl?: string
-  afterUpload?: (relativePath: string) => Promise<void>
+  afterUpload?: (fileURL: string) => Promise<void>
 }>(), {
   size: 88,
   shape: 'square',
@@ -58,8 +58,8 @@ const upload = async (options: UploadRequestOptions) => {
   try {
     const result = await uploadFile(file)
     uploadedPreview.value = result.url
-    emit('update:modelValue', result.relative_path)
-    await props.afterUpload?.(result.relative_path)
+    emit('update:modelValue', result.url)
+    await props.afterUpload?.(result.url)
     options.onSuccess(result)
   } catch (error) {
     uploadedPreview.value = ''
