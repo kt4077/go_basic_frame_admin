@@ -51,3 +51,6 @@ Thumbs.db
 *.pem
 *.key
 *.crt
+
+# 本地安装的管理端插件（核心注册器和类型文件仍由核心仓库维护）
+/src/plugins/*/
