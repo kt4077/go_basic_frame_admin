@@ -65,6 +65,7 @@ export interface MessageRecord extends BaseEntity {
   jump_url: string
   is_read: number
   read_at: string | null
+  user_deleted_at: string | null
   biz_type: string
   biz_id: string
   template_id: number

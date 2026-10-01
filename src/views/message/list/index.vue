@@ -165,6 +165,15 @@ onMounted(loadData)
             </el-tooltip>
           </template>
         </el-table-column>
+        <el-table-column label="用户状态" width="105">
+          <template #default="{ row }">
+            <el-tooltip :content="row.user_deleted_at ? `用户删除时间 ${formatDateTime(row.user_deleted_at)}` : '用户端正常显示'" placement="top">
+              <el-tag :type="row.user_deleted_at ? 'info' : 'success'" effect="plain">
+                {{ row.user_deleted_at ? '用户已删除' : '正常' }}
+              </el-tag>
+            </el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column label="发送来源" width="110">
           <template #default="{ row }">{{ MsgSendSourceLabels[row.send_source] ?? row.send_source }}</template>
         </el-table-column>

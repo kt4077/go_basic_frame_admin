@@ -23,6 +23,9 @@ const form = reactive({
   system_name: '',
   default_nickname: '',
   default_avatar: '',
+  share_image: '',
+  share_title: '',
+  share_description: '',
 })
 const systemVersion = ref('')
 
@@ -49,6 +52,9 @@ const load = async () => {
       const result = await getUserPlatformConfig()
       form.default_nickname = result.default_nickname
       form.default_avatar = result.default_avatar
+      form.share_image = result.share_image
+      form.share_title = result.share_title
+      form.share_description = result.share_description
     }
   } finally {
     loading.value = false
@@ -67,9 +73,15 @@ const save = async () => {
       const result = await saveUserPlatformConfig({
         default_nickname: form.default_nickname,
         default_avatar: form.default_avatar,
+        share_image: form.share_image,
+        share_title: form.share_title,
+        share_description: form.share_description,
       })
       form.default_nickname = result.default_nickname
       form.default_avatar = result.default_avatar
+      form.share_image = result.share_image
+      form.share_title = result.share_title
+      form.share_description = result.share_description
     }
     ElMessage.success('平台配置保存成功')
   } finally {
@@ -91,7 +103,7 @@ onMounted(load)
         <el-tag effect="plain" round>{{ isAdmin ? '管理后台' : '用户应用' }}</el-tag>
       </div>
 
-      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="config-form">
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="config-form" :class="{ 'is-user': !isAdmin }">
         <template v-if="isAdmin">
           <el-form-item label="系统 Logo">
             <AvatarUpload v-model="form.logo" :size="104" shape="square" />
@@ -107,13 +119,37 @@ onMounted(load)
         </template>
 
         <template v-else>
-          <el-form-item label="默认头像">
-            <AvatarUpload v-model="form.default_avatar" :size="104" shape="circle" />
-          </el-form-item>
-          <el-form-item label="默认昵称" prop="default_nickname">
-            <el-input v-model="form.default_nickname" maxlength="100" show-word-limit placeholder="请输入新用户默认昵称" />
-            <div class="field-help">用户未设置昵称时，可使用该名称作为默认展示。</div>
-          </el-form-item>
+          <div class="user-config-grid">
+            <div class="config-column">
+              <div class="column-heading">
+                <strong>用户基础配置</strong>
+                <span>设置新用户默认展示的头像和昵称。</span>
+              </div>
+              <el-form-item label="默认头像">
+                <AvatarUpload v-model="form.default_avatar" :size="104" shape="circle" />
+              </el-form-item>
+              <el-form-item label="默认昵称" prop="default_nickname">
+                <el-input v-model="form.default_nickname" maxlength="100" show-word-limit placeholder="请输入新用户默认昵称" />
+                <div class="field-help">用户未设置昵称时，可使用该名称作为默认展示。</div>
+              </el-form-item>
+            </div>
+            <div class="config-column">
+              <div class="column-heading">
+                <strong>默认分享设置</strong>
+                <span>页面未单独配置分享内容时，将使用以下默认设置。</span>
+              </div>
+              <el-form-item label="分享图片">
+                <AvatarUpload v-model="form.share_image" :size="160" shape="square" />
+                <div class="field-help">建议使用 5:4 的清晰图片，文件将上传至当前默认存储渠道。</div>
+              </el-form-item>
+              <el-form-item label="分享标题">
+                <el-input v-model="form.share_title" maxlength="100" show-word-limit placeholder="请输入默认分享标题" />
+              </el-form-item>
+              <el-form-item label="分享简介">
+                <el-input v-model="form.share_description" type="textarea" :rows="3" maxlength="255" show-word-limit placeholder="请输入默认分享简介" />
+              </el-form-item>
+            </div>
+          </div>
         </template>
 
         <div class="form-actions">
@@ -131,13 +167,20 @@ onMounted(load)
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--card-border); }
 .section-heading h4 { margin: 0 0 5px; color: var(--el-text-color-primary); font-size: 15px; }
 .config-form { width: min(680px, 100%); padding-top: 22px; }
+.config-form.is-user { width:100%; }
 .config-form :deep(.el-form-item) { margin-bottom: 24px; }
 .config-form :deep(.el-form-item__label) { font-weight: 600; color: var(--el-text-color-primary); }
 .field-help { margin-top: 7px; color: var(--el-text-color-secondary); font-size: 12px; }
+.user-config-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:28px; }
+.config-column { min-width:0; padding:22px 24px 4px; border:1px solid var(--card-border); border-radius:12px; background:var(--el-fill-color-extra-light); }
+.column-heading { display:flex; flex-direction:column; gap:5px; margin-bottom:22px; padding-bottom:16px; border-bottom:1px dashed var(--card-border); color:var(--el-text-color-primary); font-size:14px; }
+.column-heading span { color:var(--el-text-color-secondary); font-size:12px; font-weight:400; }
 .form-actions { padding-top: 2px; border-top: 1px dashed var(--card-border); }
 .form-actions .el-button { min-width: 104px; margin-top: 18px; }
 @media (max-width: 640px) {
   .config-card { padding: 16px; }
   .section-heading { align-items: flex-start; }
+  .user-config-grid { grid-template-columns:1fr; gap:18px; }
+  .config-column { padding:18px 16px 2px; }
 }
 </style>

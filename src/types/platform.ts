@@ -17,10 +17,17 @@ export interface UserPlatformConfig {
   default_nickname: string
   default_avatar: string
   default_avatar_path: string
+  share_image: string
+  share_image_path: string
+  share_title: string
+  share_description: string
 }
 
 /** 用户端平台配置保存参数。 */
 export interface UserPlatformConfigSave {
   default_nickname: string
   default_avatar: string
+  share_image: string
+  share_title: string
+  share_description: string
 }
