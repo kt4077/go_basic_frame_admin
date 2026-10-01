@@ -2,6 +2,7 @@
 // 第一列菜单：只渲染两级（一级 + 二级）；二级若还有子级，点击后进入第二列展示
 // 支持折叠模式（仅显示图标，hover 弹出子菜单）
 import { useRoute, useRouter } from 'vue-router'
+import AppIcon from '@/components/AppIcon.vue'
 import { useUserStore } from '@/store/user'
 import { useAppStore } from '@/store/app'
 import type { TreeNode } from '@/types/common'
@@ -37,14 +38,14 @@ const onNodeClick = (node: TreeNode<MenuItem>) => {
         :index="top.data.path || String(top.data.id)"
         @click="onNodeClick(top)"
       >
-        <el-icon v-if="top.data.icon"><component :is="top.data.icon" /></el-icon>
+        <el-icon v-if="top.data.icon"><AppIcon :name="top.data.icon" /></el-icon>
         <template #title>{{ top.data.name }}</template>
       </el-menu-item>
 
       <!-- 一级目录：展开显示二级 -->
       <el-sub-menu v-else :index="String(top.data.id)">
         <template #title>
-          <el-icon v-if="top.data.icon"><component :is="top.data.icon" /></el-icon>
+          <el-icon v-if="top.data.icon"><AppIcon :name="top.data.icon" /></el-icon>
           <span>{{ top.data.name }}</span>
         </template>
         <el-menu-item
@@ -53,7 +54,7 @@ const onNodeClick = (node: TreeNode<MenuItem>) => {
           :index="second.data.path || String(second.data.id)"
           @click="onNodeClick(second)"
         >
-          <el-icon v-if="second.data.icon"><component :is="second.data.icon" /></el-icon>
+          <el-icon v-if="second.data.icon"><AppIcon :name="second.data.icon" /></el-icon>
           <template #title>{{ second.data.name }}</template>
         </el-menu-item>
       </el-sub-menu>

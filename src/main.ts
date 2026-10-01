@@ -6,10 +6,12 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
+import '@icon-park/vue-next/styles/index.css'
 
 import App from './App.vue'
 import router from './router'
 import AppPagination from '@/components/AppPagination.vue'
+import AppIcon from '@/components/AppIcon.vue'
 import { useAppStore } from '@/store/app'
 import permission from '@/directives/permission'
 import watermark from '@/directives/watermark'
@@ -24,6 +26,7 @@ app.use(ElementPlus, { locale: zhCn })
 
 // 全局通用分页组件
 app.component('AppPagination', AppPagination)
+app.component('AppIcon', AppIcon)
 
 for (const [name, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(name, component)

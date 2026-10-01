@@ -11,6 +11,9 @@ importers:
       '@element-plus/icons-vue':
         specifier: ^2.3.1
         version: 2.3.2(vue@3.5.43(typescript@5.6.3))
+      '@icon-park/vue-next':
+        specifier: ^1.4.2
+        version: 1.4.2(vue@3.5.43(typescript@5.6.3))
       '@wangeditor/editor':
         specifier: ^5.1.23
         version: 5.1.23
@@ -242,6 +245,12 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@icon-park/vue-next@1.4.2':
+    resolution: {integrity: sha512-+QklF255wkfBOabY+xw6FAI0Bwln/RhdwCunNy/9sKdKuChtaU67QZqU67KGAvZUTeeBgsL+yaHHxqfQeGZXEQ==}
+    engines: {node: '>= 8.0.0', npm: '>= 5.0.0'}
+    peerDependencies:
+      vue: 3.x
 
   '@jridgewell/sourcemap-codec@1.6.0':
     resolution: {integrity: sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==}
@@ -1176,6 +1185,10 @@ snapshots:
       '@floating-ui/utils': 0.2.12
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@icon-park/vue-next@1.4.2(vue@3.5.43(typescript@5.6.3))':
+    dependencies:
+      vue: 3.5.43(typescript@5.6.3)
 
   '@jridgewell/sourcemap-codec@1.6.0': {}
 

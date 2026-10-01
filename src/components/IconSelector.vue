@@ -1,11 +1,13 @@
 <script setup lang="ts">
-// IconSelector 图标选择器：输入框展示已选图标，右侧按钮打开弹窗，
-// 弹窗内网格展示 Element Plus 全部图标，支持按名称搜索，点击选中。
-import { computed, ref } from 'vue'
-import * as ElementPlusIcons from '@element-plus/icons-vue'
-import { Search, CircleClose, Grid } from '@element-plus/icons-vue'
+import type { AppIconDefinition } from '@/utils/iconRegistry'
+import { computed, ref, watch } from 'vue'
+import { CircleClose, Grid, Search } from '@element-plus/icons-vue'
+import AppIcon from '@/components/AppIcon.vue'
+import { getAppIcons } from '@/utils/iconRegistry'
 
-defineProps<{
+type IconSource = 'element-plus' | 'iconpark'
+
+const props = defineProps<{
   modelValue: string
   placeholder?: string
 }>()
@@ -14,18 +16,24 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
 }>()
 
+const MAX_VISIBLE_ICONS = 300
 const visible = ref(false)
 const keyword = ref('')
+const source = ref<IconSource>('element-plus')
+const loading = ref(false)
+const icons = ref<AppIconDefinition[]>([])
 
-// 全部图标：名称 + 组件
-const allIcons = Object.entries(ElementPlusIcons).map(([name, comp]) => ({ name, comp }))
-
-const filtered = computed(() =>
-  allIcons.filter((i) => i.name.toLowerCase().includes(keyword.value.trim().toLowerCase()))
-)
+const matchedIcons = computed(() => {
+  const normalizedKeyword = keyword.value.trim().toLowerCase()
+  return icons.value.filter(icon =>
+    !normalizedKeyword || icon.label.toLowerCase().includes(normalizedKeyword)
+  )
+})
+const visibleIcons = computed(() => matchedIcons.value.slice(0, MAX_VISIBLE_ICONS))
 
 const open = () => {
   keyword.value = ''
+  source.value = props.modelValue.startsWith('iconpark:') ? 'iconpark' : 'element-plus'
   visible.value = true
 }
 
@@ -34,15 +42,25 @@ const pick = (name: string) => {
   visible.value = false
 }
 
-const clear = () => {
-  emit('update:modelValue', '')
-}
+const clear = () => emit('update:modelValue', '')
+
+let loadSequence = 0
+watch(source, async (value) => {
+  const sequence = ++loadSequence
+  loading.value = true
+  try {
+    const result = await getAppIcons(value)
+    if (sequence === loadSequence) icons.value = result
+  } finally {
+    if (sequence === loadSequence) loading.value = false
+  }
+}, { immediate: true })
 </script>
 
 <template>
   <el-input :model-value="modelValue" readonly :placeholder="placeholder">
     <template #prefix>
-      <el-icon v-if="modelValue"><component :is="modelValue" /></el-icon>
+      <AppIcon v-if="modelValue" :name="modelValue" :size="16" />
     </template>
     <template #suffix>
       <el-icon v-if="modelValue" class="icon-action" title="清除" @click.stop="clear"><CircleClose /></el-icon>
@@ -50,21 +68,35 @@ const clear = () => {
     </template>
   </el-input>
 
-  <el-dialog v-model="visible" title="选择图标" width="620px" append-to-body>
-    <el-input v-model="keyword" placeholder="搜索图标名称，如 setting" :prefix-icon="Search" clearable style="margin-bottom: 12px" />
-    <div class="icon-grid">
-      <div
-        v-for="icon in filtered"
+  <el-dialog v-model="visible" title="选择图标" width="680px" append-to-body>
+    <el-tabs v-model="source" class="icon-source-tabs">
+      <el-tab-pane label="Element Plus" name="element-plus" />
+      <el-tab-pane label="IconPark" name="iconpark" />
+    </el-tabs>
+    <el-input
+      v-model="keyword"
+      :placeholder="source === 'iconpark' ? '搜索 IconPark 图标名称，如 Home' : '搜索 Element Plus 图标名称，如 Setting'"
+      :prefix-icon="Search"
+      clearable
+      class="icon-search"
+    />
+    <div v-loading="loading" class="icon-grid">
+      <button
+        v-for="icon in visibleIcons"
         :key="icon.name"
+        type="button"
         class="icon-cell"
         :class="{ active: icon.name === modelValue }"
         @click="pick(icon.name)"
       >
-        <el-icon :size="20"><component :is="icon.comp" /></el-icon>
-        <span class="icon-name">{{ icon.name }}</span>
-      </div>
+        <AppIcon :name="icon.name" :size="22" />
+        <span class="icon-name">{{ icon.label }}</span>
+      </button>
     </div>
-    <div v-if="filtered.length === 0" class="icon-empty">未找到匹配的图标</div>
+    <div v-if="matchedIcons.length > MAX_VISIBLE_ICONS" class="icon-hint">
+      当前展示前 {{ MAX_VISIBLE_ICONS }} 个图标，请输入名称缩小范围
+    </div>
+    <div v-if="matchedIcons.length === 0" class="icon-empty">未找到匹配的图标</div>
   </el-dialog>
 </template>
 
@@ -74,29 +106,30 @@ const clear = () => {
   cursor: pointer;
   transition: color 0.2s;
 }
-.icon-action:hover {
-  color: var(--el-color-primary);
-}
-.icon-open {
-  margin-left: 4px;
-}
+.icon-action:hover { color: var(--el-color-primary); }
+.icon-open { margin-left: 4px; }
+.icon-source-tabs { margin-top: -12px; }
+.icon-search { margin-bottom: 12px; }
 .icon-grid {
-  max-height: 380px;
-  overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  max-height: 420px;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
   gap: 8px;
+  overflow-y: auto;
 }
 .icon-cell {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   padding: 12px 6px 8px;
   border: 1px solid var(--card-border);
   border-radius: 8px;
+  background: transparent;
   color: var(--el-text-color-regular);
   cursor: pointer;
+  font: inherit;
   transition: border-color 0.2s, color 0.2s, background-color 0.2s;
 }
 .icon-cell:hover {
@@ -109,17 +142,19 @@ const clear = () => {
   color: var(--el-color-primary);
 }
 .icon-name {
-  max-width: 84px;
-  font-size: 11px;
-  color: var(--el-text-color-secondary);
+  max-width: 92px;
   overflow: hidden;
+  color: var(--el-text-color-secondary);
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.icon-hint,
 .icon-empty {
-  padding: 30px 0;
-  text-align: center;
-  font-size: 13px;
+  padding: 14px 0 2px;
   color: var(--el-text-color-secondary);
+  font-size: 13px;
+  text-align: center;
 }
+.icon-empty { padding: 30px 0; }
 </style>
