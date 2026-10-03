@@ -32,15 +32,17 @@ export const registerDynamicRoutes = (menus: TreeNode<MenuItem>[]) => {
     for (const node of nodes) {
       if (node.data.type === MenuType.Page && node.data.path) {
         const name = node.data.path
-        if (!addedRouteNames.has(name)) {
+        // HMR、菜单热更新或浏览器长时间未刷新时，内存记录可能与 Router
+        // 的实际路由表不同步；是否需要注册必须以 router.hasRoute 为准。
+        if (!router.hasRoute(name)) {
           router.addRoute('layout', {
             path: name,
             name,
             component: resolveView(name),
             meta: { title: node.data.name },
           })
-          addedRouteNames.add(name)
         }
+        addedRouteNames.add(name)
       }
       if (node.children) walk(node.children)
     }
@@ -106,6 +108,16 @@ router.beforeEach(async (to) => {
     }
     // 动态路由注册完成后重新解析目标地址，否则首次直达会命中 404 兜底
     return { path: to.fullPath, replace: true }
+  }
+
+  // 菜单已加载但运行时路由表因 HMR/新增页面未同步时，先按当前菜单树
+  // 自愈补注册，再重新解析目标地址，避免错误落入“页面不存在或无权访问”。
+  const matchedNotFound = to.matched.some(record => record.path === '/:pathMatch(.*)*')
+  if (matchedNotFound) {
+    registerDynamicRoutes(userStore.routers)
+    if (router.hasRoute(to.path)) {
+      return { path: to.fullPath, replace: true }
+    }
   }
   if (to.path === '/') {
     // 默认首页 = 当前用户有权限的第一个菜单页面
