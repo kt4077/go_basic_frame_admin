@@ -13,6 +13,7 @@ import type { RoleItem } from '@/types/role'
 import type { TreeNode } from '@/types/common'
 import { Status, StatusLabels, IsSuper } from '@/enums/common'
 import AvatarUpload from '@/components/AvatarUpload.vue'
+import AppPagination from '@/components/AppPagination.vue'
 
 const loading = ref(false)
 const total = ref(0)

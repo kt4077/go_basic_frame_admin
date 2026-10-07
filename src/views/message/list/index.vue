@@ -6,6 +6,7 @@ import { getMessageRecords, getMessageTemplates, sendMessage } from '@/api/messa
 import { MsgJumpTypeLabels, MsgSendSourceLabels, MsgTypeLabels, msgTypeOptions, PushChannelLabels, ReadStatusLabels } from '@/enums/message'
 import { formatDateTime, formatDateTimeCell } from '@/utils/datetime'
 import type { MessageRecord, MessageSend, MessageTemplate } from '@/types/message'
+import AppPagination from '@/components/AppPagination.vue'
 import SendForm from './components/SendForm.vue'
 import PushRecordDrawer from './components/PushRecordDrawer.vue'
 import SubscriptionDrawer from './components/SubscriptionDrawer.vue'

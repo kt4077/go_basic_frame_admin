@@ -10,7 +10,6 @@ import '@icon-park/vue-next/styles/index.css'
 
 import App from './App.vue'
 import router from './router'
-import AppPagination from '@/components/AppPagination.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import { useAppStore } from '@/store/app'
 import permission from '@/directives/permission'
@@ -24,8 +23,6 @@ app.use(pinia)
 app.use(router)
 app.use(ElementPlus, { locale: zhCn })
 
-// 全局通用分页组件
-app.component('AppPagination', AppPagination)
 app.component('AppIcon', AppIcon)
 
 for (const [name, component] of Object.entries(ElementPlusIconsVue)) {

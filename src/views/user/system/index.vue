@@ -8,6 +8,7 @@ import { formatDateTimeCell } from '@/utils/datetime'
 import { Status, StatusLabels } from '@/enums/common'
 import { Gender, RegisterSourceLabels } from '@/enums/member'
 import type { MemberItem } from '@/types/member'
+import AppPagination from '@/components/AppPagination.vue'
 
 const loading = ref(false)
 const total = ref(0)

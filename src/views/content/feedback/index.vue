@@ -3,6 +3,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getFeedbackList, processFeedback } from '@/api/feedback'
 import type { FeedbackItem } from '@/types/feedback'
+import AppPagination from '@/components/AppPagination.vue'
 
 const labels:Record<string,string>={bug:'功能异常',suggestion:'产品建议',content:'内容问题',service:'服务问题',other:'其他'}
 const loading=ref(false), processing=ref(0), rows=ref<FeedbackItem[]>([]), total=ref(0)
@@ -28,7 +29,7 @@ onMounted(load)
       <el-table-column label="处理信息" width="190"><template #default="{row}"><div>{{row.processor_name||'—'}}</div><small>{{format(row.processed_at)}}</small></template></el-table-column>
       <el-table-column label="操作" width="110" fixed="right"><template #default="{row}"><el-button v-if="row.status===1" v-perm="'POST:/admin/feedback/process'" type="primary" link :loading="processing===row.id" @click="process(row)">标记处理</el-button><span v-else>—</span></template></el-table-column>
     </el-table>
-    <el-pagination v-model:current-page="query.page" v-model:page-size="query.page_size" class="pagination" :total="total" layout="total, prev, pager, next" @current-change="load"/>
+    <AppPagination v-model:page="query.page" v-model:page-size="query.page_size" :total="total" @change="load" />
   </div>
 </template>
-<style scoped>.search-panel{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:18px;padding:16px;border:1px solid var(--card-border);border-radius:10px;background:var(--el-fill-color-extra-light)}.search-panel>.el-input,.search-panel>.el-select{width:170px;flex:0 0 170px}.search-panel :deep(.feedback-date){width:240px!important;max-width:240px;flex:0 0 240px!important}.search-actions{display:flex;flex:0 0 auto;gap:8px}.user-cell{display:flex;align-items:center;gap:10px}.images{display:flex;flex-wrap:wrap;gap:6px}.images :deep(.el-image){width:42px;height:42px;border-radius:6px}.pagination{justify-content:flex-end;margin-top:18px}small{color:var(--el-text-color-secondary)}</style>
+<style scoped>.search-panel{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:18px;padding:16px;border:1px solid var(--card-border);border-radius:10px;background:var(--el-fill-color-extra-light)}.search-panel>.el-input,.search-panel>.el-select{width:170px;flex:0 0 170px}.search-panel :deep(.feedback-date){width:240px!important;max-width:240px;flex:0 0 240px!important}.search-actions{display:flex;flex:0 0 auto;gap:8px}.user-cell{display:flex;align-items:center;gap:10px}.images{display:flex;flex-wrap:wrap;gap:6px}.images :deep(.el-image){width:42px;height:42px;border-radius:6px}small{color:var(--el-text-color-secondary)}</style>

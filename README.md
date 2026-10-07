@@ -163,6 +163,7 @@ pnpm preview
 - `param` 和响应字段在 TypeScript 中明确建模，避免使用 `any`。
 - 枚举集中放在 `src/enums`，值与后端保持一致并从 `1` 开始。
 - 日期时间统一通过 `src/utils/datetime.ts` 格式化到秒。
+- 后端分页列表必须显式复用核心组件 `src/components/AppPagination.vue`，禁止页面直接使用 `el-pagination`；每页条数统一为 `10 / 15 / 20 / 25`，默认 20 条。
 - 文件上传使用通用上传组件和接口，提交业务数据时使用相对路径。
 - 新页面路由由数据库菜单驱动，不要重复写入静态业务路由。
 

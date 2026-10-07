@@ -30,7 +30,7 @@ const onSizeChange = (s: number) => {
     :total="total"
     background
     layout="total, prev, pager, next, sizes, jumper"
-    :page-sizes="[10, 20, 50, 100]"
+    :page-sizes="[10, 15, 20, 25]"
     class="app-pagination"
     @current-change="onPageChange"
     @size-change="onSizeChange"
