@@ -10,19 +10,27 @@ export interface FinanceOrderProduct {
 
 export interface FinanceOrderItem {
   uid: string
+  finance_order_no: string
   source_plugin_id: string
   source_plugin_name: string
   source_order_uid: string
   order_no: string
+  business_order_no: string
   order_title: string
   products: FinanceOrderProduct[]
   member_nickname: string
   member_avatar: string
   member_mobile: string
+  user_channel: number
+  user_channel_text: string
   order_status: number
   status_text: string
   pay_status: number
   pay_method: string
+  payment_channel: number
+  payment_channel_text: string
+  payment_scene: number
+  payment_scene_text: string
   product_amount: string
   shipping_amount: string
   discount_amount: string

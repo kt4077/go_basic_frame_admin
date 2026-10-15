@@ -24,16 +24,19 @@ defineExpose({ open })
     <div v-loading="loading" class="detail-body">
       <template v-if="order">
         <div class="detail-head">
-          <div><h3>{{ order.order_no }}</h3><p>{{ order.source_plugin_name }} · {{ order.status_text }}</p></div>
+          <div><h3>{{ order.finance_order_no }}</h3><p>业务订单：{{ order.business_order_no }} · {{ order.source_plugin_name }}</p></div>
           <el-tag :type="order.pay_status === 2 ? 'success' : order.pay_status === 3 ? 'danger' : 'warning'">{{ payStatusLabels[order.pay_status] || '未知' }}</el-tag>
         </div>
         <el-descriptions :column="2" border>
           <el-descriptions-item label="业务模块">{{ order.source_plugin_name }}</el-descriptions-item>
+          <el-descriptions-item label="基座订单号">{{ order.finance_order_no }}</el-descriptions-item>
+          <el-descriptions-item label="业务订单号">{{ order.business_order_no }}</el-descriptions-item>
           <el-descriptions-item label="来源订单UID">{{ order.source_order_uid }}</el-descriptions-item>
           <el-descriptions-item label="用户昵称">{{ order.member_nickname || '—' }}</el-descriptions-item>
           <el-descriptions-item label="用户手机">{{ order.member_mobile || '—' }}</el-descriptions-item>
+          <el-descriptions-item label="用户渠道">{{ order.user_channel_text }}</el-descriptions-item>
           <el-descriptions-item label="订单状态">{{ order.status_text || '—' }}</el-descriptions-item>
-          <el-descriptions-item label="支付方式">{{ order.pay_method || '—' }}</el-descriptions-item>
+          <el-descriptions-item label="支付方式">{{ order.payment_channel_text || '—' }} {{ order.payment_scene_text }}</el-descriptions-item>
           <el-descriptions-item label="下单时间">{{ formatDateTime(order.created_at) }}</el-descriptions-item>
           <el-descriptions-item label="支付时间">{{ formatDateTime(order.paid_at) }}</el-descriptions-item>
         </el-descriptions>

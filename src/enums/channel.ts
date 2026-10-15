@@ -30,3 +30,6 @@ export const OpenPlatformLabels: Record<number, string> = {
 }
 export const PaymentChannel = { Wechat: 1, Alipay: 2 } as const
 export const PaymentChannelLabels: Record<number, string> = { 1: '微信支付', 2: '支付宝' }
+export const PaymentScene = { WechatMini: 1, WechatJSAPI: 2, WechatH5: 3, WechatApp: 4, AlipayMini: 5, AlipayH5: 6, AlipayApp: 7 } as const
+export const PaymentSceneLabels: Record<number, string> = { 1: '微信小程序', 2: '微信内H5/公众号', 3: '微信H5', 4: '微信APP', 5: '支付宝小程序', 6: '支付宝H5', 7: '支付宝APP' }
+export const PaymentChannelScenes: Record<number, number[]> = { 1: [1, 2, 3, 4], 2: [5, 6, 7] }
